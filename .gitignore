@@ -37,6 +37,8 @@ Icon
 # Thumbnails
 ._*
 ./main.go
+./go.work.sum
+**/*.sum
 # Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
