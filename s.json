@@ -1,0 +1,13 @@
+{
+    "__meta__": {
+        "about": "HTTPie session file",
+        "help": "https://httpie.io/docs#sessions",
+        "httpie": "3.2.2"
+    },
+    "auth": {
+        "raw_auth": "kekw1337",
+        "type": "bearer"
+    },
+    "cookies": [],
+    "headers": []
+}
