@@ -12,8 +12,8 @@
 <!-- repos:end -->
 
 <p align="center">
-<img src="https://img.shields.io/github/last-commit/stelmanjones/termtools?logo=go&link=https%3A%2F%2Fpkg.go.dev%2Fstelmanjones%2Ftermtools
-">
+  <img src="https://img.shields.io/github/last-commit/stelmanjones/termtools?logo=go&link=https%3A%2F%2Fpkg.go.dev%2Fstelmanjones%2Ftermtools" alt="Commits">
+
 
 </p>
 
