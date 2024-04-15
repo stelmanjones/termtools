@@ -1,4 +1,4 @@
-package ezkv
+package kv
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ import (
 	"github.com/emirpasic/gods/trees/btree"
 	"github.com/gookit/color"
 	"github.com/gorilla/mux"
-	"github.com/stelmanjones/termtools/ezkv/errors"
+	"github.com/stelmanjones/termtools/kv/errors"
 )
 
 var (
@@ -24,7 +24,6 @@ var (
 	deleteColor = color.New(color.FgRed, color.OpBold).Render
 	hotPink     = color.RGBFromHEX("#FF69B4")
 )
-
 
 type ServerOption func(*EZKV)
 
@@ -82,7 +81,7 @@ func New(options ...ServerOption) *EZKV {
 		address: "127.0.0.1",
 		port:    9999,
 	}
-	
+
 	for _, option := range options {
 		option(k)
 	}
@@ -325,7 +324,7 @@ func (k *EZKV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	}
 }
 
-func (k *EZKV) Run() error {
+func (k *EZKV) Serve() error {
 	r := mux.NewRouter()
 	//r.PathPrefix("/kv")
 

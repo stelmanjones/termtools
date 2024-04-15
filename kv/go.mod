@@ -1,8 +1,8 @@
-module github.com/stelmanjones/termtools/ezkv
+module github.com/stelmanjones/termtools/kv
 
 replace github.com/stelmanjones/termtools => ../termtools
 
-replace github.com/stelmanjones/termtools/ezkv/errors => ./errors
+replace github.com/stelmanjones/termtools/kv/errors => ./errors
 
 go 1.22.1
 
