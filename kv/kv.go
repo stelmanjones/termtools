@@ -16,18 +16,12 @@ import (
 	"github.com/gookit/color"
 	"github.com/gorilla/mux"
 	"github.com/stelmanjones/termtools/kv/errors"
+	"github.com/stelmanjones/termtools/styles"
 )
 
-var (
-	setColor    = color.New(color.FgYellow, color.OpBold).Render
-	getColor    = color.New(color.FgGreen, color.OpBold).Render
-	deleteColor = color.New(color.FgRed, color.OpBold).Render
-	hotPink     = color.RGBFromHEX("#FF69B4")
-)
+type ServerOption func(*KV)
 
-type ServerOption func(*EZKV)
-
-type EZKV struct {
+type KV struct {
 	mu      *sync.RWMutex
 	data    map[string]*btree.Tree
 	auth    bool
@@ -72,8 +66,8 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 	ReportTimestamp: true,
 })
 
-func New(options ...ServerOption) *EZKV {
-	k := &EZKV{
+func New(options ...ServerOption) *KV {
+	k := &KV{
 		mu:      &sync.RWMutex{},
 		data:    make(map[string]*btree.Tree),
 		auth:    false,
@@ -90,39 +84,39 @@ func New(options ...ServerOption) *EZKV {
 }
 
 func WithAuth(token string) ServerOption {
-	return func(k *EZKV) {
+	return func(k *KV) {
 		k.auth = true
 		k.token = token
-		logger.Warn(setColor("AUTH ENABLED"))
+		logger.Warn(styles.Warning.Styled("AUTH ENABLED"))
 
 	}
 }
 
 func WithAddress(address string) ServerOption {
-	return func(k *EZKV) {
+	return func(k *KV) {
 		k.address = address
 	}
 }
 
 func WithPort(port int) ServerOption {
-	return func(k *EZKV) {
+	return func(k *KV) {
 		k.port = port
 	}
 }
 
 func WithRandomAuth() ServerOption {
-	return func(k *EZKV) {
+	return func(k *KV) {
 		k.auth = true
 		k.token = generateRandomString(256)
-		logger.Warn(setColor("AUTH ENABLED"), "token", k.token)
+		logger.Warn(styles.Warning.Styled("AUTH ENABLED"), "token", k.token)
 	}
 }
 
-func (k *EZKV) Data() *map[string]*btree.Tree {
+func (k *KV) Data() *map[string]*btree.Tree {
 	return &k.data
 }
 
-func (k *EZKV) Set(table string, key string, value interface{}) {
+func (k *KV) Set(table string, key string, value interface{}) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	if k.data[table] == nil {
@@ -130,10 +124,10 @@ func (k *EZKV) Set(table string, key string, value interface{}) {
 	}
 	k.data[table].Put(key, value)
 
-	logger.Debug(setColor("SET"), key, value)
+	logger.Debug(styles.Warning.Styled("SET"), key, value)
 }
 
-func (k *EZKV) Get(table string, key string) (interface{}, error) {
+func (k *KV) Get(table string, key string) (interface{}, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	if k.data[table] == nil {
@@ -143,11 +137,11 @@ func (k *EZKV) Get(table string, key string) (interface{}, error) {
 	if !found {
 		return value, errors.ErrKeyNotFound
 	}
-	logger.Debug(getColor("GET"), key, value)
+	logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
 	return value, nil
 }
 
-func (k *EZKV) Delete(table string, key string) error {
+func (k *KV) Delete(table string, key string) error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	if k.data[table] == nil {
@@ -155,11 +149,11 @@ func (k *EZKV) Delete(table string, key string) error {
 	}
 
 	k.data[table].Remove(key)
-	logger.Debug(deleteColor("DELETE"), key)
+	logger.Debug(styles.AccentRed.Styled("DELETE"), key)
 	return nil
 }
 
-func (k *EZKV) Keys() []map[string][]interface{} {
+func (k *KV) Keys() []map[string][]interface{} {
 	k.mu.RLock()
 	var keys []map[string][]interface{}
 	defer k.mu.RUnlock()
@@ -169,7 +163,7 @@ func (k *EZKV) Keys() []map[string][]interface{} {
 	return keys
 }
 
-func (k *EZKV) Values() []map[string][]interface{} {
+func (k *KV) Values() []map[string][]interface{} {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	var values []map[string][]interface{}
@@ -180,7 +174,7 @@ func (k *EZKV) Values() []map[string][]interface{} {
 	return values
 }
 
-func (k *EZKV) Clear(table string) error {
+func (k *KV) Clear(table string) error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	if k.data[table] == nil {
@@ -192,7 +186,7 @@ func (k *EZKV) Clear(table string) error {
 	return nil
 }
 
-func (k *EZKV) Size() int {
+func (k *KV) Size() int {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	var size int
@@ -202,7 +196,7 @@ func (k *EZKV) Size() int {
 	return size
 }
 
-func (k *EZKV) handleGetKey(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	res, err := k.Get(params["table"], params["key"])
 	if err != nil {
@@ -223,7 +217,7 @@ func (k *EZKV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *EZKV) handleSetKey(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	k.Set(params["table"], params["key"], params["value"])
@@ -240,7 +234,7 @@ func (k *EZKV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *EZKV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
 	k.Delete(p["table"], p["key"])
 	data := json.New()
@@ -256,7 +250,7 @@ func (k *EZKV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *EZKV) handleGetKv(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleGetKv(w http.ResponseWriter, r *http.Request) {
 	logger.WithPrefix("ADMIN").Info("GET KV")
 	data := json.New()
 	data.Set("result", k.Data())
@@ -271,7 +265,7 @@ func (k *EZKV) handleGetKv(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *EZKV) handleClearKv(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleClearKv(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
 	err := k.Clear(p["table"])
 	if err != nil {
@@ -293,7 +287,7 @@ func (k *EZKV) handleClearKv(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *EZKV) handleGetSize(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleGetSize(w http.ResponseWriter, r *http.Request) {
 	data := json.New()
 	data.Set("result", map[string]interface{}{"size": k.Size()})
 	payload, err := data.MarshalJSON()
@@ -306,7 +300,7 @@ func (k *EZKV) handleGetSize(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *EZKV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
+func (k *KV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := r.Header.Get("Authorization")
@@ -324,7 +318,7 @@ func (k *EZKV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	}
 }
 
-func (k *EZKV) Serve() error {
+func (k *KV) Serve() error {
 	r := mux.NewRouter()
 	//r.PathPrefix("/kv")
 
@@ -335,7 +329,7 @@ func (k *EZKV) Serve() error {
 	r.HandleFunc("/adm/kv/{table}", k.handleClearKv).Methods("DELETE")
 	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
-	hotPink.Printf("%s\n\n", Banner)
+	fmt.Printf("%s\n\n", styles.Accent.Styled(Banner))
 	logger.Debug("Server started 🎉", "address", k.address, "port", k.port, "auth", k.auth)
 	logger.Fatal(http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(k.port)}, ":"), r))
 

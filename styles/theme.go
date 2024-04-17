@@ -1,11 +1,39 @@
-package prompt
-
+package styles
 
 import (
-	"github.com/charmbracelet/bubbles/help"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/termenv"
 )
 
+var s termenv.Style
+
+var (
+	red      = termenv.RGBColor("#ff8272")
+	green    = termenv.RGBColor("#b4fa72")
+	yellow   = termenv.RGBColor("#fefdc2")
+	blue     = termenv.RGBColor("#a5d5fe")
+	neonBlue = termenv.RGBColor("#1ec9ff")
+	pink     = termenv.RGBColor("#ff8ffd")
+	magenta  = termenv.RGBColor("#d0d1fe")
+	white    = termenv.RGBColor("#f1f1f1")
+	darkGray = termenv.RGBColor("#616161")
+)
+
+var (
+	Title             = s.Foreground(white).Bold()
+	Foreground        = s.Foreground(white)
+	AccentRed         = s.Bold().Foreground(red)
+	AccentBlue        = s.Bold().Foreground(neonBlue)
+	AccentGreen       = s.Bold().Foreground(green)
+	Selector          = s.Foreground(red).Styled("❯")
+	Dimmed            = s.Faint()
+	Highlight         = s.Foreground(green)
+	Accent            = s.Foreground(pink)
+	SelectedOption    = s.Bold().Foreground(green)
+	NonSelectedOption = s.Faint()
+	Warning           = s.Foreground(yellow)
+)
+
+/*
 // Theme is a collection of styles for components of the form.
 // Themes can be applied to a form using the WithTheme option.
 type Theme struct {
@@ -229,3 +257,4 @@ func ThemeCharm() *Theme {
 	return &t
 }
 
+*/

@@ -9,5 +9,5 @@ import (
 
 
 var (
-	ErrCanceledPrompt = errors.New("prompt canceled")
+	ErrCanceledPrompt = errors.New("user canceled")
 )
