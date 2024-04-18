@@ -28,21 +28,18 @@ func NewSelectionPrompt[T PromptValue](choices ...T) *SelectionPrompt[T] {
 		Choices: make([]T, 0),
 		index:   0,
 	}
-	
+
 	p.Choices = append(p.Choices, choices...)
-	
+
 	return p
 
 }
 
-
-
-
-func (p *SelectionPrompt[T])AddChoice(choice T)  {
+func (p *SelectionPrompt[T]) AddChoice(choice T) {
 	p.Choices = append(p.Choices, choice)
 }
 
-func (p *SelectionPrompt[T])AddChoices(choices ...T)  {
+func (p *SelectionPrompt[T]) AddChoices(choices ...T) {
 	p.Choices = append(p.Choices, choices...)
 }
 
@@ -104,7 +101,7 @@ func (p *SelectionPrompt[T]) render(out *termenv.Output) {
 
 }
 
-func (p *SelectionPrompt[T]) Run() (*T,error) {
+func (p *SelectionPrompt[T]) Run() (*T, error) {
 	if len(p.Choices) == 0 {
 		panic("No options provided")
 	}
@@ -131,7 +128,7 @@ outer:
 		case keys.Enter:
 			break outer
 		case keys.CtrlC, keys.CtrlD, keys.Esc:
-			return new(T),ErrCanceledPrompt
+			return new(T), ErrCanceledPrompt
 		case keys.Down, keys.Tab:
 			p.increaseIndex()
 		case keys.Up, keys.ShiftTab:
@@ -144,6 +141,6 @@ outer:
 	if p.removeWhenDone {
 		out.ClearLines(len(p.Choices) + 4)
 	}
-	return &p.Choices[p.index],nil
+	return &p.Choices[p.index], nil
 
 }

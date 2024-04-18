@@ -12,7 +12,7 @@ import (
 
 	json "github.com/bitly/go-simplejson"
 	"github.com/charmbracelet/log"
-	"github.com/emirpasic/gods/trees/btree"
+	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/gookit/color"
 	"github.com/gorilla/mux"
 	"github.com/stelmanjones/termtools/kv/errors"
@@ -23,7 +23,7 @@ type ServerOption func(*KV)
 
 type KV struct {
 	mu      *sync.RWMutex
-	data    map[string]*btree.Tree
+	data    *hashmap.Map
 	auth    bool
 	token   string
 	address string
@@ -69,7 +69,7 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 func New(options ...ServerOption) *KV {
 	k := &KV{
 		mu:      &sync.RWMutex{},
-		data:    make(map[string]*btree.Tree),
+		data:    hashmap.New(),
 		auth:    false,
 		token:   "",
 		address: "127.0.0.1",
@@ -88,7 +88,6 @@ func WithAuth(token string) ServerOption {
 		k.auth = true
 		k.token = token
 		logger.Warn(styles.Warning.Styled("AUTH ENABLED"))
-
 	}
 }
 
@@ -112,17 +111,13 @@ func WithRandomAuth() ServerOption {
 	}
 }
 
-func (k *KV) Data() *map[string]*btree.Tree {
-	return &k.data
+func (k *KV) Data() *hashmap.Map {
+	return k.data
 }
-
-func (k *KV) Set(table string, key string, value interface{}) {
+func (k *KV) Set(key string, value interface{}) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
-	if k.data[table] == nil {
-		k.data[table] = btree.NewWithStringComparator(3)
-	}
-	k.data[table].Put(key, value)
+	k.data.Put(key, value)
 
 	logger.Debug(styles.Warning.Styled("SET"), key, value)
 }
@@ -130,70 +125,45 @@ func (k *KV) Set(table string, key string, value interface{}) {
 func (k *KV) Get(table string, key string) (interface{}, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
-	if k.data[table] == nil {
-		return nil, errors.ErrTableNotFound
+	if value, found := k.data.Get(key); found != false {
+		logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
+		return value, nil
 	}
-	value, found := k.data[table].Get(key)
-	if !found {
-		return value, errors.ErrKeyNotFound
-	}
-	logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
-	return value, nil
+	return nil, errors.ErrKeyNotFound
 }
 
-func (k *KV) Delete(table string, key string) error {
+func (k *KV) Delete(key string) error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
-	if k.data[table] == nil {
-		return errors.ErrTableNotFound
-	}
-
-	k.data[table].Remove(key)
+	k.data.Remove(key)
 	logger.Debug(styles.AccentRed.Styled("DELETE"), key)
 	return nil
 }
 
-func (k *KV) Keys() []map[string][]interface{} {
-	k.mu.RLock()
-	var keys []map[string][]interface{}
-	defer k.mu.RUnlock()
-	for table := range k.data {
-		keys = append(keys, map[string][]interface{}{table: k.data[table].Keys()})
-	}
-	return keys
-}
-
-func (k *KV) Values() []map[string][]interface{} {
+func (k *KV) Keys() []interface{} {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
-	var values []map[string][]interface{}
-	defer k.mu.RUnlock()
-	for table := range k.data {
-		values = append(values, map[string][]interface{}{table: k.data[table].Values()})
-	}
-	return values
+	return k.data.Keys()
 }
 
-func (k *KV) Clear(table string) error {
+func (k *KV) Values() []interface{} {
+	k.mu.RLock()
+	defer k.mu.RUnlock()
+	return k.data.Values()
+}
+
+func (k *KV) Clear() error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
-	if k.data[table] == nil {
-		return errors.ErrTableNotFound
-	}
-
-	k.data[table].Clear()
-	logger.Warn(color.Bold.Sprintf("CLEARED TABLE %s", strings.ToUpper(table)))
+	k.data.Clear()
+	logger.Warn(color.Bold.Sprint("CLEARED TABLE"))
 	return nil
 }
 
 func (k *KV) Size() int {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
-	var size int
-	for table := range k.data {
-		size += k.data[table].Size()
-	}
-	return size
+	return k.data.Size()
 }
 
 func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
@@ -220,9 +190,9 @@ func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	k.Set(params["table"], params["key"], params["value"])
+	k.Set(params["key"], params["value"])
 	data := json.New()
-	data.Set("result", map[string]interface{}{"table": params["table"], "key": params["key"], "value": params["value"]})
+	data.Set("result", map[string]interface{}{"key": params["key"], "value": params["value"]})
 	payload, err := data.MarshalJSON()
 	if err != nil {
 		logger.Error("SET ERROR", "err", err)
@@ -236,7 +206,7 @@ func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 
 func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
-	k.Delete(p["table"], p["key"])
+	k.Delete(p["key"])
 	data := json.New()
 	data.Set("result", fmt.Sprintf("DELETED %s", p["key"]))
 	payload, err := data.MarshalJSON()
@@ -252,9 +222,7 @@ func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 
 func (k *KV) handleGetKv(w http.ResponseWriter, r *http.Request) {
 	logger.WithPrefix("ADMIN").Info("GET KV")
-	data := json.New()
-	data.Set("result", k.Data())
-	payload, err := data.MarshalJSON()
+	payload, err := k.data.MarshalJSON()
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -266,17 +234,16 @@ func (k *KV) handleGetKv(w http.ResponseWriter, r *http.Request) {
 }
 
 func (k *KV) handleClearKv(w http.ResponseWriter, r *http.Request) {
-	p := mux.Vars(r)
-	err := k.Clear(p["table"])
+	err := k.Clear()
 	if err != nil {
 		logger.Error("CLEAR ERROR", "err", err)
 
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	logger.WithPrefix("ADMIN").Warnf("CLEARED TABLE %s", p["table"])
+	logger.WithPrefix("ADMIN").Warn("CLEARED TABLE")
 	data := json.New()
-	data.Set("result", fmt.Sprintf("CLEARED TABLE %s", p["table"]))
+	data.Set("result", fmt.Sprint("CLEARED TABLE"))
 	payload, err := data.MarshalJSON()
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
@@ -312,21 +279,19 @@ func (k *KV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 			}
 
 			next.ServeHTTP(w, r)
-
-			return
 		})
 	}
 }
 
 func (k *KV) Serve() error {
 	r := mux.NewRouter()
-	//r.PathPrefix("/kv")
+	// r.PathPrefix("/kv")
 
-	r.HandleFunc("/kv/{table}/{key}", k.handleGetKey).Methods("GET")
-	r.HandleFunc("/kv/{table}/{key}/{value}", k.handleSetKey).Methods("POST")
-	r.HandleFunc("/kv/{table}/{key}", k.handleDeleteKey).Methods("DELETE")
+	r.HandleFunc("/kv/{key}", k.handleGetKey).Methods("GET")
+	r.HandleFunc("/kv/{key}/{value}", k.handleSetKey).Methods("POST")
+	r.HandleFunc("/kv/{key}", k.handleDeleteKey).Methods("DELETE")
 	r.HandleFunc("/adm/kv", k.handleGetKv).Methods("GET")
-	r.HandleFunc("/adm/kv/{table}", k.handleClearKv).Methods("DELETE")
+	r.HandleFunc("/adm/kv", k.handleClearKv).Methods("DELETE")
 	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
 	fmt.Printf("%s\n\n", styles.Accent.Styled(Banner))

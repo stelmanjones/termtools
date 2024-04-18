@@ -12,7 +12,7 @@ func ListenForInput(ch chan keys.Key) error {
 			ch <- key
 			return false, nil
 
-		case keys.Enter,keys.CtrlC,keys.CtrlD,keys.Esc:
+		case keys.Enter, keys.CtrlC, keys.CtrlD, keys.Esc:
 			{
 				ch <- key
 				return true, nil

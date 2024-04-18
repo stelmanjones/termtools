@@ -24,6 +24,7 @@ var (
 	AccentRed         = s.Bold().Foreground(red)
 	AccentBlue        = s.Bold().Foreground(neonBlue)
 	AccentGreen       = s.Bold().Foreground(green)
+	RoundSelector     = s.Foreground(red).Styled("●")
 	Selector          = s.Foreground(red).Styled("❯")
 	Dimmed            = s.Faint()
 	Highlight         = s.Foreground(green)

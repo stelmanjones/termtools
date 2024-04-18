@@ -159,7 +159,7 @@ func (s *Spinner) Start() {
 	s.mu.Unlock()
 
 	go keyboard.Listen(func(key keys.Key) (stop bool, err error) {
-			
+
 		for _, c := range s.CancelKeys {
 
 			if key.Code == c {
