@@ -125,7 +125,7 @@ func (k *KV) Set(key string, value interface{}) {
 func (k *KV) Get(table string, key string) (interface{}, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
-	if value, found := k.data.Get(key); found != false {
+	if value, found := k.data.Get(key); found {
 		logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
 		return value, nil
 	}
@@ -243,7 +243,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.WithPrefix("ADMIN").Warn("CLEARED TABLE")
 	data := json.New()
-	data.Set("result", fmt.Sprint("CLEARED TABLE"))
+	data.Set("result", "CLEARED TABLE")
 	payload, err := data.MarshalJSON()
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
