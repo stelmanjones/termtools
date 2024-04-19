@@ -114,7 +114,7 @@ func (k *KV) Set(key string, value interface{}) {
 	logger.Debug(styles.Warning.Styled("SET"), key, value)
 }
 
-func (k *KV) Get(table string, key string) (interface{}, error) {
+func (k *KV) Get(key string) (interface{}, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	if value, found := k.data.Get(key); found {
@@ -160,7 +160,7 @@ func (k *KV) Size() int {
 
 func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	res, err := k.Get(params["table"], params["key"])
+	res, err := k.Get(params["key"])
 	if err != nil {
 		logger.Error("GET ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusNotFound)

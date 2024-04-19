@@ -4,9 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/username/repo)](https://goreportcard.com/report/github.com/stelmanjones/termtools/kv)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/stelmanjones/termtools/blob/main/LICENSE)
 
-## Description
-
-A brief description of what this Go module does.
+![Example](../examples/images/kv.png)
 
 ## Install
 

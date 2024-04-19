@@ -12,16 +12,31 @@ import (
 
 	// "github.com/charmbracelet/log"
 	//	"github.com/gookit/color"
-	"github.com/charmbracelet/log"
-	"github.com/stelmanjones/termtools/kv"
+	//"errors"
+
+	"errors"
+
+	"github.com/stelmanjones/termtools/usure"
 	// "github.com/stelmanjones/termtools/prompt"
 	// "github.com/stelmanjones/termtools/spin"
 )
 
-func main() {
+func retErr() error {
+	return errors.New("fn error")
+}
 
-	db := kv.New()
-	log.Fatal(db.Serve(9999))
+type kek struct {
+	name      string
+	something int
+}
+
+func main() {
+	first := kek{"kek", 1}
+	second := kek{"kwk", 2}
+	usure.ExpectEqual("sadkek", first, second)
+
+	// db := kv.New()
+	// log.Fatal(db.Serve(9999))
 	/*
 		p := prompt.NewSelectionPrompt[string]()
 		p.SetLabel("What is your favourite day of the week?")

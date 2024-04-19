@@ -60,4 +60,6 @@ Temporary Items
 *.icloud
 
 # End of https://www.toptal.com/developers/gitignore/api/go,macos
-Auto Copied
+Auto Copied./scripts/
+print_examples.ts
+./.scripts/

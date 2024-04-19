@@ -10,7 +10,8 @@ interactive prompts for command-line interfaces. It includes selection prompts,
 question prompts, and confirmation prompts.
 
 
-![example](./prompt.gif)
+**Example**
+![Example](../examples/images/prompt.png)
 
 ## Install
 ```go
