@@ -212,7 +212,7 @@ func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *KV) handleGetKv(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleKvData(w http.ResponseWriter, r *http.Request) {
 	logger.WithPrefix("ADMIN").Info("GET KV")
 	payload, err := k.data.MarshalJSON()
 	if err != nil {
@@ -246,7 +246,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *KV) handleGetSize(w http.ResponseWriter, r *http.Request) {
+func (k *KV) handleGetKvSize(w http.ResponseWriter, r *http.Request) {
 	data := json.New()
 	data.Set("result", map[string]interface{}{"size": k.Size()})
 	payload, err := data.MarshalJSON()
@@ -286,9 +286,9 @@ func (k *KV) Serve(port int) error {
 	r.HandleFunc("/kv/{key}", k.handleGetKey).Methods("GET")
 	r.HandleFunc("/kv/{key}/{value}", k.handleSetKey).Methods("POST")
 	r.HandleFunc("/kv/{key}", k.handleDeleteKey).Methods("DELETE")
-	r.HandleFunc("/adm/kv", k.handleGetKv).Methods("GET")
+	r.HandleFunc("/adm/kv", k.handleKvData).Methods("GET")
 	r.HandleFunc("/adm/kv", k.handleClearKv).Methods("DELETE")
-	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")
+	r.HandleFunc("/adm/size", k.handleGetKvSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
 	fmt.Printf("%s\n\n", styles.Accent.Styled(Banner))
 	logger.Debug("Server started 🎉", "address", k.address, "port", port, "auth", k.auth)
