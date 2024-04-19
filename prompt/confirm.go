@@ -14,6 +14,7 @@ type ConfirmationPrompt struct {
 	PromptBase[string]
 }
 
+// NewConfirmationPrompt creates a new ConfirmationPrompt with the specified label.
 func NewConfirmationPrompt(label string) *ConfirmationPrompt {
 	p := &ConfirmationPrompt{
 
@@ -25,6 +26,7 @@ func NewConfirmationPrompt(label string) *ConfirmationPrompt {
 
 }
 
+// SetLabel sets the label for the ConfirmationPrompt.
 func (p *ConfirmationPrompt) SetLabel(label string) *ConfirmationPrompt {
 	p.label = label
 	return p
@@ -40,6 +42,8 @@ func (p *ConfirmationPrompt) render(out *termenv.Output) {
 	}
 }
 
+// Run executes the confirmation prompt and returns the user's response.
+// It renders the prompt, listens for user input, and handles the response accordingly.
 func (p *ConfirmationPrompt) Run() (bool, error) {
 	out := termenv.DefaultOutput()
 	p.render(out)

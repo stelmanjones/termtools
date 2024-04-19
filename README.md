@@ -6,9 +6,10 @@
 
 - [spin](https://github.com/stelmanjones/termtools/spin): 😵 Simple and easy
   terminal spinners
-- [ezkv](https://github.com/stelmanjones/termtools/ezkv): 🧠 A simple in-memory
+- [kv](https://github.com/stelmanjones/termtools/kv): 🧠 A simple in-memory
   key-value store with built in server and REST API.
-
+- [prompt](https://github.com/stelmanjones/termtools/prompt): ❓ A small library of prompts for the terminal.
+- [usure](https://github.com/stelmanjones/termtools/usure): ‼️ Tiny library of assertions and test functions.
 <!-- repos:end -->
 
 <p align="center">

@@ -8,26 +8,28 @@ import (
 	"github.com/muesli/termenv"
 )
 
+// QuestionPrompt struct represents a prompt for a question.
 type QuestionPrompt struct {
 	PromptBase[string]
 	removeWhenDone bool
 }
 
+// NewQuestionPrompt creates a new QuestionPrompt with the provided label.
 func NewQuestionPrompt(label string) *QuestionPrompt {
 	p := &QuestionPrompt{
-
 		PromptBase: PromptBase[string]{
 			label: label,
 		},
 	}
 	return p
-
 }
 
+// SetLabel sets the label of the QuestionPrompt.
 func (p *QuestionPrompt) SetLabel(label string) {
 	p.label = label
 }
 
+// RemoveWhenDone clears the prompt when done.
 func (p *QuestionPrompt) RemoveWhenDone() *QuestionPrompt {
 	p.removeWhenDone = true
 	return p
@@ -38,9 +40,9 @@ func (p *QuestionPrompt) NoRemoveWhenDone() *QuestionPrompt {
 	return p
 }
 
+// render writes the label of the QuestionPrompt to the provided Output.
 func (p *QuestionPrompt) render(out *termenv.Output) {
 	if p.label != "" {
-
 		_, err := out.WriteString(p.label + " ")
 		if err != nil {
 			fmt.Println(err)
@@ -48,6 +50,7 @@ func (p *QuestionPrompt) render(out *termenv.Output) {
 	}
 }
 
+// Run starts the QuestionPrompt and returns the user's input as a string.
 func (p *QuestionPrompt) Run() (string, error) {
 	out := termenv.DefaultOutput()
 	var input strings.Builder
