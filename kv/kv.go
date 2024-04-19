@@ -27,7 +27,6 @@ type KV struct {
 	auth    bool
 	token   string
 	address string
-	port    int
 }
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -73,7 +72,6 @@ func New(options ...ServerOption) *KV {
 		auth:    false,
 		token:   "",
 		address: "127.0.0.1",
-		port:    9999,
 	}
 
 	for _, option := range options {
@@ -94,12 +92,6 @@ func WithAuth(token string) ServerOption {
 func WithAddress(address string) ServerOption {
 	return func(k *KV) {
 		k.address = address
-	}
-}
-
-func WithPort(port int) ServerOption {
-	return func(k *KV) {
-		k.port = port
 	}
 }
 
@@ -270,6 +262,10 @@ func (k *KV) handleGetSize(w http.ResponseWriter, r *http.Request) {
 func (k *KV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !k.auth {
+				next.ServeHTTP(w, r)
+				return
+			}
 			token := r.Header.Get("Authorization")
 			expected := fmt.Sprintf("Bearer %s", k.token)
 			if token == "" || token != expected {
@@ -283,7 +279,7 @@ func (k *KV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	}
 }
 
-func (k *KV) Serve() error {
+func (k *KV) Serve(port int) error {
 	r := mux.NewRouter()
 	// r.PathPrefix("/kv")
 
@@ -295,8 +291,11 @@ func (k *KV) Serve() error {
 	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
 	fmt.Printf("%s\n\n", styles.Accent.Styled(Banner))
-	logger.Debug("Server started 🎉", "address", k.address, "port", k.port, "auth", k.auth)
-	logger.Fatal(http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(k.port)}, ":"), r))
+	logger.Debug("Server started 🎉", "address", k.address, "port", port, "auth", k.auth)
+	err := http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(port)}, ":"), r)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
