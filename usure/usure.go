@@ -15,8 +15,8 @@ func NotNil(a any) bool {
 	return a != nil
 }
 
-func IsInstance(a any, b any) bool {
-	return reflect.TypeOf(a) == reflect.TypeOf(b)
+func IsInstance[T any](a T) bool {
+	return reflect.TypeOf(a) == reflect.TypeFor[T]()
 }
 
 func Equal[T any](a, b T) bool {
@@ -27,7 +27,7 @@ func NotEqual[T any](a, b T) bool {
 	return !reflect.DeepEqual(a, b)
 }
 
-func ExpectEqual[T any](msg string, a, b T) {
+func ExpectEqual[T any](msg string, a, b T) bool {
 	if !Equal(a, b) {
 		log.Errorf("%s: %v %v is not equal to %v %v",
 			color.FgRed.Render(msg),
@@ -35,7 +35,9 @@ func ExpectEqual[T any](msg string, a, b T) {
 				reflect.TypeOf(a).Kind()), a,
 			color.FgLightBlue.Render(
 				reflect.TypeOf(b).Kind()), b)
+		return false
 	}
+	return true
 }
 
 // HACK: Dont know if this function makes any sense
