@@ -2,11 +2,10 @@ package main
 
 import (
 	"errors"
-
 	"time"
 
-	"github.com/muesli/termenv"
-	"github.com/stelmanjones/termtools/styles"
+	"github.com/gookit/color"
+	"github.com/stelmanjones/termtools/spin"
 )
 
 func retErr() error {
@@ -19,37 +18,38 @@ type kek struct {
 }
 
 func main() {
-	i := 0
-	test := "Testing 123 string hello world"
-	ticker := time.NewTicker(50 * time.Millisecond)
-	out := termenv.DefaultOutput()
+	s := spin.New(spin.BouncingBar,
+		spin.WithPrefix("Loading Program "),
+		spin.WithColor(color.FgGreen),
+		spin.WithFinalMsg("Done!"))
+	s.Start()
+	time.Sleep(5 * time.Second)
+	s.Stop()
 
-	for _ = range ticker.C {
-		i++
-		if i == 80 {
-			ticker.Stop()
-			out.ClearLine()
+	/*
+		i := 0
+		test := "Testing 123 string hello world"
+		ticker := time.NewTicker(50 * time.Millisecond)
+		out := termenv.DefaultOutput()
+
+		for _ = range ticker.C {
+			i++
+			if i == 80 {
+				ticker.Stop()
+				out.ClearLine()
+				out.MoveCursor(0, 0)
+				return
+			}
 			out.MoveCursor(0, 0)
-			return
-		}
-		out.MoveCursor(0, 0)
-		out.ClearLine()
-		out.WriteString(styles.AccentRed.Styled(styles.Glitch(test)))
+			out.ClearLine()
+			out.WriteString(styles.AccentRed.Styled(styles.Glitch(test)))
 
-	}
+		}
+	*/
 
 	// prompt.Ask("What is your name?", true)
 	// prompt.Select("What is your favourite day of the week?", []string{"friday", "saturday"}, true)
 	// prompt.Confirm("Are you sure you want to continue?")
-	/*
-		s := spin.New(spin.Letters,
-			spin.WithPrefix(styles.Glitch("Loading Program ")),
-			spin.WithColor(color.FgGreen))
-		s.Start()
-		time.Sleep(5 * time.Second)
-		s.Stop()
-
-	*/
 
 	/*
 		p := prompt.NewSelectionPrompt[string]()

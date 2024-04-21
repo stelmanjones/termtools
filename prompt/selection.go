@@ -12,19 +12,19 @@ import (
 var footer = "\n ↓/↑, tab/S-tab, j/k: down/up • enter: select\n"
 
 // SelectionPrompt represents a prompt that allows the user to select from a list of choices.
-type SelectionPrompt[T PromptValue] struct {
-	PromptBase[T]    // The base prompt that the selection prompt inherits from.
-	Choices          []T  // The list of choices available for selection.
-	index            int  // The index of the currently selected choice.
-	removeWhenDone   bool // Indicates whether the prompt should be removed from the screen when done.
+type SelectionPrompt[T Value] struct {
+	Base[T]             // The base prompt that the selection prompt inherits from.
+	Choices        []T  // The list of choices available for selection.
+	index          int  // The index of the currently selected choice.
+	removeWhenDone bool // Indicates whether the prompt should be removed from the screen when done.
 }
 
 // NewSelectionPrompt creates a new instance of the SelectionPrompt.
 // It takes a variadic number of choices of type T.
-func NewSelectionPrompt[T PromptValue](choices ...T) *SelectionPrompt[T] {
+func NewSelectionPrompt[T Value](choices ...T) *SelectionPrompt[T] {
 	p := &SelectionPrompt[T]{
 
-		PromptBase: PromptBase[T]{
+		Base: Base[T]{
 			label:    "",
 			selector: styles.Selector,
 		},

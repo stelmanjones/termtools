@@ -4,19 +4,21 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type PromptValue interface {
+// Value is a type constraint that represents any type that is ordered.
+type Value interface {
 	constraints.Ordered
 }
 
-// PromptBase is the base struct for all prompts
-type PromptBase[T PromptValue] struct {
+// Base is the base struct for all prompts
+type Base[T Value] struct {
 	// PromptType
 	label    string
 	selector string
 	//theme *TermtoolsTheme
 }
 
-func (p *PromptBase[T]) SetSelector(selector string) *PromptBase[T] {
+// SetSelector sets the selector for the prompt.
+func (p *Base[T]) SetSelector(selector string) *Base[T] {
 	p.selector = selector
 	return p
 }

@@ -1,43 +1,46 @@
 package spin
 
-// Copyright (c) 2024 Oscar Nordmar
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
+// CharSet is a type alias for a slice of strings.
 type CharSet = []string
+
+// SpinnerVariant represents a variant of a spinner with a specific character set and interval.
 type SpinnerVariant struct {
 	chars    CharSet
 	Interval int
 }
 
+// NewSpinnerVariant creates a new SpinnerVariant with the given character set and interval.
 func NewSpinnerVariant(charSet CharSet, interval int) SpinnerVariant {
 	return SpinnerVariant{chars: charSet, Interval: interval}
 }
 
 var (
-	GrowVertical   = NewSpinnerVariant(CharSets[0], 80)
-	Bounce         = NewSpinnerVariant(CharSets[1], 120)
-	Dots1          = NewSpinnerVariant(CharSets[2], 80)
-	Dots2          = NewSpinnerVariant(CharSets[3], 80)
-	Dots3          = NewSpinnerVariant(CharSets[4], 80)
-	Letters        = NewSpinnerVariant(CharSets[5], 120)
+	// GrowVertical is a spinner variant that grows the spinner vertically.
+	GrowVertical = NewSpinnerVariant(CharSets[0], 80)
+	// Bounce is a spinner variant that bounces the spinner.
+	Bounce = NewSpinnerVariant(CharSets[1], 120)
+	// Dots1 is a spinner variant that shows three dots.
+	Dots1 = NewSpinnerVariant(CharSets[2], 80)
+	// Dots2 is a spinner variant that shows three dots.
+	Dots2 = NewSpinnerVariant(CharSets[3], 80)
+	// Dots3 is a spinner variant that shows three dots.
+	Dots3 = NewSpinnerVariant(CharSets[4], 80)
+	// Letters is a spinner variant that shows the letters a-z.
+	Letters = NewSpinnerVariant(CharSets[5], 120)
+	// GrowHorizontal is a spinner variant that grows the spinner horizontally.
 	GrowHorizontal = NewSpinnerVariant(CharSets[6], 80)
-	Simple         = NewSpinnerVariant(CharSets[7], 120)
-	GrowHV         = NewSpinnerVariant(CharSets[8], 80)
-	Arc            = NewSpinnerVariant(CharSets[9], 80)
-	BouncingBar    = NewSpinnerVariant(CharSets[10], 80)
+	// Simple is a spinner variant that shows a simple spinner.
+	Simple = NewSpinnerVariant(CharSets[7], 120)
+	// GrowHV is a spinner variant that grows the spinner horizontally and vertically.
+	GrowHV = NewSpinnerVariant(CharSets[8], 80)
+	// Arc is a spinner variant that shows an arc.
+	Arc = NewSpinnerVariant(CharSets[9], 80)
+	// BouncingBar is a spinner variant that shows a bouncing bar.
+	BouncingBar = NewSpinnerVariant(CharSets[10], 80)
+	// BouncingSimple is a spinner variant that shows a bouncing simple spinner.
 	BouncingSimple = NewSpinnerVariant(CharSets[11], 80)
-	MovingDots     = NewSpinnerVariant(CharSets[12], 80)
+	// MovingDots is a spinner variant that shows moving dots.
+	MovingDots = NewSpinnerVariant(CharSets[12], 80)
 )
 
 // CharSets contains the available character sets
@@ -53,9 +56,7 @@ var CharSets = map[int][]string{
 	7:  {".  ", ".. ", "..."},
 	8:  {"▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▉", "▊", "▋", "▌", "▍", "▎", "▏", "▏", "▎", "▍", "▌", "▋", "▊", "▉", "█", "▇", "▆", "▅", "▄", "▃", "▂", "▁"},
 	9:  {"◜", "◝", "◞", "◟"},
-	10: {"( ●    )", "(  ●   )", "(   ●  )", "(    ● )", "(     ●)", "(    ● )", "(   ●  )", "(  ●   )", "( ●    )"},
+	10: {"(●    )", "( ●    )", "(  ●   )", "(   ●  )", "(    ● )", "(     ●)", "(    ● )", "(   ●  )", "(  ●   )", "( ●    )"},
 	11: {".  ", ".. ", "...", " ..", "  .", "   "},
 	12: {"∙∙∙", "●∙∙", "∙●∙", "∙∙●", "∙∙∙"},
 }
-
-var CharSetNames = []string{"growVertical", "bounce", "dots1", "dots2", "dots3", "letters", "growHorizontal", "simple", "growHV", "arc", "bouncingBar", "bouncingSimple", "movingDots"}

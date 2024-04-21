@@ -10,15 +10,16 @@ import (
 	"github.com/stelmanjones/termtools/styles"
 )
 
+// ConfirmationPrompt is a prompt that asks the user to confirm a certain action.
 type ConfirmationPrompt struct {
-	PromptBase[string]
+	Base[string]
 }
 
 // NewConfirmationPrompt creates a new ConfirmationPrompt with the specified label.
 func NewConfirmationPrompt(label string) *ConfirmationPrompt {
 	p := &ConfirmationPrompt{
 
-		PromptBase: PromptBase[string]{
+		Base: Base[string]{
 			label: label,
 		},
 	}

@@ -1,3 +1,4 @@
+
 package examples
 
 import (
@@ -5,6 +6,10 @@ import (
 )
 
 func test() {
+
+	// prompt.Ask("What is your name?", true)
+	// prompt.Select("What is your favourite day of the week?", []string{"friday", "saturday"}, true)
+	// prompt.Confirm("Are you sure you want to continue?")
 
 	p := prompt.NewSelectionPrompt[string]()
 	p.SetLabel("What is your favourite day of the week?")

@@ -5,6 +5,7 @@ import (
 	"atomicgo.dev/keyboard/keys"
 )
 
+// ListenForInput listens for input from the user.
 func ListenForInput(ch chan keys.Key) error {
 	return keyboard.Listen(func(key keys.Key) (stop bool, err error) {
 		switch key.Code {

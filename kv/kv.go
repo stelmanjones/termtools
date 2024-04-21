@@ -1,3 +1,4 @@
+// Package kv provides a key-value store with optional authentication and HTTP server functionality.
 package kv
 
 import (
@@ -20,20 +21,23 @@ import (
 	"github.com/stelmanjones/termtools/styles"
 )
 
-type KVOption func(*KV)
+// Option defines a function signature for options used to configure a KV instance.
+type Option func(*KV)
 
+// KV represents a key-value store with optional authentication and network address configuration.
 type KV struct {
-	mu      *sync.RWMutex
-	data    *hashmap.Map
-	auth    bool
-	token   string
-	address string
+	mu      *sync.RWMutex // Guards access to the data map.
+	data    *hashmap.Map  // The data stored in the key-value store.
+	auth    bool          // Indicates if authentication is enabled.
+	token   string        // The authentication token required if auth is enabled.
+	address string        // The network address the server will listen on.
 }
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+// generateRandomString creates a random string of a specified length using a predefined charset.
 func generateRandomString(length int) string {
 	b := make([]byte, length)
 	for i := range b {
@@ -66,7 +70,8 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 	ReportTimestamp: true,
 })
 
-func New(options ...KVOption) *KV {
+// New creates a new KV instance with the provided options.
+func New(options ...Option) *KV {
 	k := &KV{
 		mu:      &sync.RWMutex{},
 		data:    hashmap.New(),
@@ -82,7 +87,8 @@ func New(options ...KVOption) *KV {
 	return k
 }
 
-func WithAuth(token string) KVOption {
+// WithAuth configures the KV instance to require authentication with the provided token.
+func WithAuth(token string) Option {
 	return func(k *KV) {
 		k.auth = true
 		k.token = token
@@ -90,13 +96,15 @@ func WithAuth(token string) KVOption {
 	}
 }
 
-func WithAddress(address string) KVOption {
+// WithAddress sets the network address for the KV instance.
+func WithAddress(address string) Option {
 	return func(k *KV) {
 		k.address = address
 	}
 }
 
-func WithRandomAuth() KVOption {
+// WithRandomAuth configures the KV instance to require authentication with a randomly generated token.
+func WithRandomAuth() Option {
 	return func(k *KV) {
 		k.auth = true
 		k.token = generateRandomString(256)
@@ -104,9 +112,14 @@ func WithRandomAuth() KVOption {
 	}
 }
 
+// Data returns a snapshot of the current data in the KV store.
 func (k *KV) Data() *hashmap.Map {
+	k.mu.RLock()
+	defer k.mu.RUnlock()
 	return k.data
 }
+
+// Set stores a value associated with a key in the KV store.
 func (k *KV) Set(key string, value interface{}) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
@@ -115,6 +128,7 @@ func (k *KV) Set(key string, value interface{}) {
 	logger.Debug(styles.Warning.Styled("SET"), key, value)
 }
 
+// Get retrieves a value associated with a key from the KV store.
 func (k *KV) Get(key string) (interface{}, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
@@ -125,6 +139,7 @@ func (k *KV) Get(key string) (interface{}, error) {
 	return nil, errors.ErrKeyNotFound
 }
 
+// Delete removes a key and its associated value from the KV store.
 func (k *KV) Delete(key string) error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
@@ -133,18 +148,21 @@ func (k *KV) Delete(key string) error {
 	return nil
 }
 
+// Keys returns a slice of all keys currently stored in the KV store.
 func (k *KV) Keys() []any {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	return k.data.Keys()
 }
 
+// Values returns a slice of all values currently stored in the KV store.
 func (k *KV) Values() []interface{} {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	return k.data.Values()
 }
 
+// Clear removes all keys and values from the KV store.
 func (k *KV) Clear() error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
@@ -153,12 +171,14 @@ func (k *KV) Clear() error {
 	return nil
 }
 
+// Size returns the number of items currently stored in the KV store.
 func (k *KV) Size() int {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	return k.data.Size()
 }
 
+// handleGetKey processes HTTP GET requests for retrieving a value by key.
 func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	res, err := k.Get(params["key"])
@@ -180,6 +200,7 @@ func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// handleSetKey processes HTTP POST requests for setting a key-value pair.
 func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
@@ -197,6 +218,7 @@ func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// handleDeleteKey processes HTTP DELETE requests for removing a key-value pair.
 func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
 	k.Delete(p["key"])
@@ -213,7 +235,8 @@ func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *KV) handleKvData(w http.ResponseWriter, r *http.Request) {
+// handleKvData processes HTTP GET requests for retrieving all key-value pairs.
+func (k *KV) handleKvData(w http.ResponseWriter, _ *http.Request) {
 	logger.WithPrefix("ADMIN").Info("GET KV")
 	payload, err := k.data.ToJSON()
 	if err != nil {
@@ -226,7 +249,8 @@ func (k *KV) handleKvData(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *KV) handleClearKv(w http.ResponseWriter, r *http.Request) {
+// handleClearKv processes HTTP DELETE requests for clearing all key-value pairs.
+func (k *KV) handleClearKv(w http.ResponseWriter, _ *http.Request) {
 	err := k.Clear()
 	if err != nil {
 		logger.Error("CLEAR ERROR", "err", err)
@@ -247,7 +271,8 @@ func (k *KV) handleClearKv(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *KV) handleGetKvSize(w http.ResponseWriter, r *http.Request) {
+// handleGetKvSize processes HTTP GET requests for retrieving the size of the store.
+func (k *KV) handleGetKvSize(w http.ResponseWriter, _ *http.Request) {
 	data := json.New()
 	data.Set("result", map[string]interface{}{"size": k.Size()})
 	payload, err := data.MarshalJSON()
@@ -260,7 +285,8 @@ func (k *KV) handleGetKvSize(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-func (k *KV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
+// AuthMiddleware returns a middleware function that enforces authentication for HTTP requests.
+func (k *KV) AuthMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !k.auth {
@@ -280,9 +306,10 @@ func (k *KV) AuthMiddleware(r *mux.Router) mux.MiddlewareFunc {
 	}
 }
 
+// Serve starts the HTTP server on the specified port with configured routes and middleware.
 func (k *KV) Serve(port int) error {
 	r := mux.NewRouter()
-	// r.PathPrefix("/kv")
+	
 
 	r.HandleFunc("/kv/{key}", k.handleGetKey).Methods("GET")
 	r.HandleFunc("/kv/{key}/{value}", k.handleSetKey).Methods("POST")
@@ -291,7 +318,7 @@ func (k *KV) Serve(port int) error {
 	r.HandleFunc("/adm/kv", k.handleClearKv).Methods("DELETE")
 	r.HandleFunc("/adm/size", k.handleGetKvSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
-	fmt.Printf("%s\n\n", styles.Accent.Styled(Banner))
+	fmt.Printf("%s\n\n", styles.Accent.Styled(banner))
 	logger.Debug("Server started 🎉", "address", k.address, "port", port, "auth", k.auth)
 	err := http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(port)}, ":"), r)
 	if err != nil {

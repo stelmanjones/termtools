@@ -36,6 +36,7 @@ import (
 var isWindows = runtime.GOOS == "windows"
 var isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
 
+// Spinner represents a thread-safe spinner with customizable options such as character sets, prefix, suffix, and color.
 type Spinner struct {
 	mu         *sync.RWMutex
 	variant    SpinnerVariant
@@ -78,6 +79,7 @@ func New(variant SpinnerVariant, options ...Option) *Spinner {
 	return s
 }
 
+// Option is a function that modifies a Spinner.
 type Option func(s *Spinner)
 
 // WithColor returns an Option function that sets the color of the spinner.
@@ -173,26 +175,23 @@ func (s *Spinner) Start() {
 			for i := 0; i < len(s.variant.chars)-1; i++ {
 				select {
 				case <-s.stopChan:
+					s.mu.Lock()
 					s.running = false
+					s.mu.Unlock()
 					fmt.Fprint(s.Writer, "\033[?25h")
-					if s.FinalMsg != "" {
-						s.erase()
-						fmt.Fprintln(s.Writer, s.FinalMsg)
-					}
 					os.Exit(0)
 				default:
-					s.mu.Lock()
+					s.mu.RLock()
 					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", s.variant.chars[i]), s.Suffix)
 					fmt.Fprint(s.Writer, out)
 					delay := s.variant.Interval
-					s.mu.Unlock()
+					s.mu.RUnlock()
 					time.Sleep(time.Duration(delay) * time.Millisecond)
 				}
 			}
 		}
 
 	}()
-	fmt.Fprint(s.Writer, "\033[?25h")
 
 }
 
@@ -203,23 +202,25 @@ func (s *Spinner) Stop() {
 	defer s.mu.Unlock()
 	s.erase()
 	fmt.Fprint(s.Writer, "\033[?25h")
-	s.running = false
 	s.stopChan <- struct{}{}
+	if s.FinalMsg != "" {
+		s.erase()
+		fmt.Fprintln(s.Writer, s.FinalMsg)
+	}
 }
 
+// Restart stops the spinner and starts it again.
 func (s *Spinner) Restart() {
-
 	s.Stop()
 	s.Start()
 }
 
+// ShowCursor shows the cursor.
 func (s *Spinner) ShowCursor() {
 	fmt.Fprint(s.Writer, "\x1b[?25h")
 }
 
-// Hide the cursor.
-// Don't forget to show the cursor at least at the end of your application with Show.
-// Otherwise the user might have a terminal with a permanently hidden cursor, until they reopen the terminal.
+// HideCursor hides the cursor.
 func (s *Spinner) HideCursor() {
 	fmt.Fprintf(s.Writer, "\x1b[?25l")
 }
@@ -286,7 +287,7 @@ func computeLineWidth(line string) int {
 func computeNumberOfLinesNeededToPrintStringInternal(linePrinted string, maxLineWidth int) int {
 	lineCount := 0
 	for _, line := range strings.Split(linePrinted, "\n") {
-		lineCount += 1
+		lineCount++
 
 		lineWidth := computeLineWidth(line)
 		if lineWidth > maxLineWidth {

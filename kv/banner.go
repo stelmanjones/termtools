@@ -1,6 +1,6 @@
 package kv
 
-var Banner = `
+var banner = `
 888    d8P  888     888 
 888   d8P   888     888 
 888  d8P    888     888 

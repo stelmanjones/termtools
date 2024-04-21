@@ -10,14 +10,14 @@ import (
 
 // QuestionPrompt struct represents a prompt for a question.
 type QuestionPrompt struct {
-	PromptBase[string]
+	Base[string]
 	removeWhenDone bool
 }
 
 // NewQuestionPrompt creates a new QuestionPrompt with the provided label.
 func NewQuestionPrompt(label string) *QuestionPrompt {
 	p := &QuestionPrompt{
-		PromptBase: PromptBase[string]{
+		Base: Base[string]{
 			label: label,
 		},
 	}
@@ -35,6 +35,7 @@ func (p *QuestionPrompt) RemoveWhenDone() *QuestionPrompt {
 	return p
 }
 
+// NoRemoveWhenDone sets the removeWhenDone flag to false.
 func (p *QuestionPrompt) NoRemoveWhenDone() *QuestionPrompt {
 	p.removeWhenDone = false
 	return p
