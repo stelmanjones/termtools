@@ -12,6 +12,7 @@ import (
 
 	json "github.com/bitly/go-simplejson"
 	"github.com/charmbracelet/log"
+
 	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/gookit/color"
 	"github.com/gorilla/mux"
@@ -19,7 +20,7 @@ import (
 	"github.com/stelmanjones/termtools/styles"
 )
 
-type ServerOption func(*KV)
+type KVOption func(*KV)
 
 type KV struct {
 	mu      *sync.RWMutex
@@ -65,7 +66,7 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 	ReportTimestamp: true,
 })
 
-func New(options ...ServerOption) *KV {
+func New(options ...KVOption) *KV {
 	k := &KV{
 		mu:      &sync.RWMutex{},
 		data:    hashmap.New(),
@@ -81,7 +82,7 @@ func New(options ...ServerOption) *KV {
 	return k
 }
 
-func WithAuth(token string) ServerOption {
+func WithAuth(token string) KVOption {
 	return func(k *KV) {
 		k.auth = true
 		k.token = token
@@ -89,13 +90,13 @@ func WithAuth(token string) ServerOption {
 	}
 }
 
-func WithAddress(address string) ServerOption {
+func WithAddress(address string) KVOption {
 	return func(k *KV) {
 		k.address = address
 	}
 }
 
-func WithRandomAuth() ServerOption {
+func WithRandomAuth() KVOption {
 	return func(k *KV) {
 		k.auth = true
 		k.token = generateRandomString(256)
@@ -132,7 +133,7 @@ func (k *KV) Delete(key string) error {
 	return nil
 }
 
-func (k *KV) Keys() []interface{} {
+func (k *KV) Keys() []any {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	return k.data.Keys()
@@ -214,7 +215,7 @@ func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 
 func (k *KV) handleKvData(w http.ResponseWriter, r *http.Request) {
 	logger.WithPrefix("ADMIN").Info("GET KV")
-	payload, err := k.data.MarshalJSON()
+	payload, err := k.data.ToJSON()
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)

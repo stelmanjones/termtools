@@ -5,7 +5,7 @@ import (
 
 	// "github.com/gookit/color"
 	// "github.com/stelmanjones/microterm/spin"
-	//"github.com/charmbracelet/log"
+	"github.com/charmbracelet/log"
 	//"github.com/charmbracelet/log"
 	//"github.com/stelmanjones/termtools/kv"
 	//"time"
@@ -16,6 +16,7 @@ import (
 
 	"errors"
 
+	"github.com/stelmanjones/termtools/kv"
 	"github.com/stelmanjones/termtools/usure"
 	// "github.com/stelmanjones/termtools/prompt"
 	// "github.com/stelmanjones/termtools/spin"
@@ -35,8 +36,8 @@ func main() {
 	second := kek{"kwk", 2}
 	usure.ExpectEqual("sadkek", first, second)
 
-	// db := kv.New()
-	// log.Fatal(db.Serve(9999))
+	db := kv.New()
+	log.Fatal(db.Serve(9999))
 	/*
 		p := prompt.NewSelectionPrompt[string]()
 		p.SetLabel("What is your favourite day of the week?")
