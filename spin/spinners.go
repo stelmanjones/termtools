@@ -1,5 +1,7 @@
 package spin
 
+import "time"
+
 // Copyright (c) 2024 Oscar Nordmar
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,21 +17,29 @@ package spin
 // limitations under the License.
 
 type CharSet = []string
+type SpinnerVariant struct {
+	CharSet
+	Interval time.Duration
+}
+
+func NewSpinnerVariant(charSet CharSet, interval time.Duration) SpinnerVariant {
+	return SpinnerVariant{CharSet: charSet, Interval: interval}
+}
 
 var (
-	GrowVertical   CharSet = CharSets[0]
-	Bounce         CharSet = CharSets[1]
-	Dots1          CharSet = CharSets[2]
-	Dots2          CharSet = CharSets[3]
-	Dots3          CharSet = CharSets[4]
-	Letters        CharSet = CharSets[5]
-	GrowHorizontal CharSet = CharSets[6]
-	Simple         CharSet = CharSets[7]
-	GrowHV         CharSet = CharSets[8]
-	Arc            CharSet = CharSets[9]
-	BouncingBar    CharSet = CharSets[10]
-	BouncingSimple CharSet = CharSets[11]
-	MovingDots     CharSet = CharSets[12]
+	GrowVertical   = NewSpinnerVariant(CharSets[0], 80)
+	Bounce         = NewSpinnerVariant(CharSets[1], 120)
+	Dots1          = NewSpinnerVariant(CharSets[2], 80)
+	Dots2          = NewSpinnerVariant(CharSets[3], 80)
+	Dots3          = NewSpinnerVariant(CharSets[4], 80)
+	Letters        = NewSpinnerVariant(CharSets[5], 120)
+	GrowHorizontal = NewSpinnerVariant(CharSets[6], 80)
+	Simple         = NewSpinnerVariant(CharSets[7], 120)
+	GrowHV         = NewSpinnerVariant(CharSets[8], 80)
+	Arc            = NewSpinnerVariant(CharSets[9], 80)
+	BouncingBar    = NewSpinnerVariant(CharSets[10], 80)
+	BouncingSimple = NewSpinnerVariant(CharSets[11], 80)
+	MovingDots     = NewSpinnerVariant(CharSets[12], 80)
 )
 
 // CharSets contains the available character sets

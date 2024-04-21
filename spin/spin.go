@@ -38,11 +38,10 @@ var isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
 
 type Spinner struct {
 	mu         *sync.RWMutex
-	variant    CharSet
+	variant    SpinnerVariant
 	running    bool
 	stopChan   chan struct{}
 	CancelKeys []keys.KeyCode
-	Delay      time.Duration
 	Writer     io.Writer
 	WriterFile *os.File
 	Color      color.Color
@@ -55,16 +54,15 @@ type Spinner struct {
 }
 
 // New creates a new Spinner with the provided CharSet, delay, and options.
-func New(charSet CharSet, delay time.Duration, options ...Option) *Spinner {
+func New(variant SpinnerVariant, delay time.Duration, options ...Option) *Spinner {
 	s := &Spinner{
 		mu:         &sync.RWMutex{},
+		variant:    variant,
 		running:    false,
 		CancelKeys: []keys.KeyCode{keys.CtrlC, keys.Escape},
-		variant:    charSet,
 		Writer:     os.Stdout,
 		stopChan:   make(chan struct{}),
 		//keyChan:    make(chan keys.Key),
-		Delay:      delay,
 		Color:      color.FgDefault,
 		WriterFile: os.Stdout,
 		Prefix:     "",
@@ -172,7 +170,7 @@ func (s *Spinner) Start() {
 
 	go func() {
 		for {
-			for i := 0; i < len(s.variant); i++ {
+			for i := 0; i < len(s.variant.CharSet); i++ {
 				select {
 				case <-s.stopChan:
 					s.running = false
@@ -184,9 +182,9 @@ func (s *Spinner) Start() {
 					os.Exit(0)
 				default:
 					s.mu.Lock()
-					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", s.variant[i]), s.Suffix)
+					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", s.variant.CharSet[i]), s.Suffix)
 					fmt.Fprint(s.Writer, out)
-					delay := s.Delay
+					delay := s.variant.Interval
 					s.mu.Unlock()
 					time.Sleep(delay)
 				}
@@ -213,20 +211,6 @@ func (s *Spinner) Restart() {
 
 	s.Stop()
 	s.Start()
-}
-
-// UpdateSpeed will set the indicator delay to the given value.
-func (s *Spinner) UpdateSpeed(d time.Duration) {
-	s.mu.Lock()
-	s.Delay = d
-	s.mu.Unlock()
-}
-
-// UpdateCharSet will change the current character set to the given one.
-func (s *Spinner) UpdateCharSet(cs []string) {
-	s.mu.Lock()
-	s.variant = cs
-	s.mu.Unlock()
 }
 
 func (s *Spinner) ShowCursor() {
