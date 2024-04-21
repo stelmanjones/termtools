@@ -1,7 +1,5 @@
 package spin
 
-import "time"
-
 // Copyright (c) 2024 Oscar Nordmar
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +16,12 @@ import "time"
 
 type CharSet = []string
 type SpinnerVariant struct {
-	CharSet
-	Interval time.Duration
+	chars    CharSet
+	Interval int
 }
 
-func NewSpinnerVariant(charSet CharSet, interval time.Duration) SpinnerVariant {
-	return SpinnerVariant{CharSet: charSet, Interval: interval}
+func NewSpinnerVariant(charSet CharSet, interval int) SpinnerVariant {
+	return SpinnerVariant{chars: charSet, Interval: interval}
 }
 
 var (

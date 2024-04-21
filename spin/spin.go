@@ -54,7 +54,7 @@ type Spinner struct {
 }
 
 // New creates a new Spinner with the provided CharSet, delay, and options.
-func New(variant SpinnerVariant, delay time.Duration, options ...Option) *Spinner {
+func New(variant SpinnerVariant, options ...Option) *Spinner {
 	s := &Spinner{
 		mu:         &sync.RWMutex{},
 		variant:    variant,
@@ -170,7 +170,7 @@ func (s *Spinner) Start() {
 
 	go func() {
 		for {
-			for i := 0; i < len(s.variant.CharSet); i++ {
+			for i := 0; i < len(s.variant.chars)-1; i++ {
 				select {
 				case <-s.stopChan:
 					s.running = false
@@ -182,11 +182,11 @@ func (s *Spinner) Start() {
 					os.Exit(0)
 				default:
 					s.mu.Lock()
-					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", s.variant.CharSet[i]), s.Suffix)
+					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", s.variant.chars[i]), s.Suffix)
 					fmt.Fprint(s.Writer, out)
 					delay := s.variant.Interval
 					s.mu.Unlock()
-					time.Sleep(delay)
+					time.Sleep(time.Duration(delay) * time.Millisecond)
 				}
 			}
 		}

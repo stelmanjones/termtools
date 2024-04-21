@@ -8,7 +8,7 @@ import (
 )
 
 func Spin() {
-	s := spin.New(spin.BouncingBar, time.Millisecond*10,
+	s := spin.New(spin.BouncingBar,
 		spin.WithPrefix("SPINNING "),
 		spin.WithSuffix("AFTER"),
 		spin.WithColor(color.FgGreen),
