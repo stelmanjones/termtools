@@ -78,6 +78,7 @@ func New(options ...Option) *KV {
 		auth:    false,
 		token:   "",
 		address: "127.0.0.1",
+		limit:   10000,
 	}
 
 	for _, option := range options {
@@ -194,6 +195,15 @@ func (k *KV) Size() int {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	return k.data.Size()
+}
+
+// ToJSON returns the KV store data as a JSON string.
+func (k *KV) ToJSON() ([]byte, error) {
+	k.mu.RLock()
+	defer k.mu.RUnlock()
+	j := json.New()
+	j.Set("data", k.data)
+	return j.MarshalJSON()
 }
 
 // handleGetKey processes HTTP GET requests for retrieving a value by key.
