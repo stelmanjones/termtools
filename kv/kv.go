@@ -13,7 +13,6 @@ import (
 
 	json "github.com/bitly/go-simplejson"
 	"github.com/charmbracelet/log"
-
 	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/gookit/color"
 	"github.com/gorilla/mux"
@@ -26,11 +25,12 @@ type Option func(*KV)
 
 // KV represents a key-value store with optional authentication and network address configuration.
 type KV struct {
-	mu      *sync.RWMutex // Guards access to the data map.
-	data    *hashmap.Map  // The data stored in the key-value store.
-	auth    bool          // Indicates if authentication is enabled.
-	token   string        // The authentication token required if auth is enabled.
-	address string        // The network address the server will listen on.
+	mu      *sync.RWMutex
+	data    *hashmap.Map
+	auth    bool
+	token   string
+	address string
+	limit   int
 }
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -103,6 +103,13 @@ func WithAddress(address string) Option {
 	}
 }
 
+// WithLimit sets the maximum number of items allowed in the KV store.
+func WithLimit(limit int) Option {
+	return func(k *KV) {
+		k.limit = limit
+	}
+}
+
 // WithRandomAuth configures the KV instance to require authentication with a randomly generated token.
 func WithRandomAuth() Option {
 	return func(k *KV) {
@@ -114,29 +121,40 @@ func WithRandomAuth() Option {
 
 // Data returns a snapshot of the current data in the KV store.
 func (k *KV) Data() *hashmap.Map {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
 	return k.data
 }
 
 // Set stores a value associated with a key in the KV store.
-func (k *KV) Set(key string, value interface{}) {
+func (k *KV) Set(key string, value interface{}) error {
+	if k.limit > 0 && k.data.Size() >= k.limit {
+		logger.Warn(styles.Warning.Styled("TABLE FULL"))
+		return errors.ErrTableFull
+	}
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	k.data.Put(key, value)
 
 	logger.Debug(styles.Warning.Styled("SET"), key, value)
+	return nil
 }
 
 // Get retrieves a value associated with a key from the KV store.
 func (k *KV) Get(key string) (interface{}, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
-	if value, found := k.data.Get(key); found {
+	if value, found := k.data.Get(key); found != false {
 		logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
 		return value, nil
 	}
 	return nil, errors.ErrKeyNotFound
+}
+
+// Has checks if a key exists in the KV store.
+func (k *KV) Has(key string) bool {
+	k.mu.RLock()
+	defer k.mu.RUnlock()
+	_, ok := k.data.Get(key)
+	return ok
 }
 
 // Delete removes a key and its associated value from the KV store.
@@ -149,7 +167,7 @@ func (k *KV) Delete(key string) error {
 }
 
 // Keys returns a slice of all keys currently stored in the KV store.
-func (k *KV) Keys() []any {
+func (k *KV) Keys() []interface{} {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
 	return k.data.Keys()
@@ -169,19 +187,6 @@ func (k *KV) Clear() error {
 	k.data.Clear()
 	logger.Warn(color.Bold.Sprint("CLEARED TABLE"))
 	return nil
-}
-
-
-// Has checks if the specified key exists in the KV store.
-func (k *KV) Has(key string) bool {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
-	for _, k := range k.data.Keys() {
-		if k.(string) == key {
-			return true
-		}
-	}
-	return false
 }
 
 // Size returns the number of items currently stored in the KV store.
@@ -217,7 +222,12 @@ func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
-	k.Set(params["key"], params["value"])
+	err := k.Set(params["key"], params["value"])
+	if err != nil {
+		logger.Error("SET ERROR", "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	data := json.New()
 	data.Set("result", map[string]interface{}{"key": params["key"], "value": params["value"]})
 	payload, err := data.MarshalJSON()
@@ -249,9 +259,9 @@ func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleKvData processes HTTP GET requests for retrieving all key-value pairs.
-func (k *KV) handleKvData(w http.ResponseWriter, _ *http.Request) {
+func (k *KV) handleGetKv(w http.ResponseWriter, _ *http.Request) {
 	logger.WithPrefix("ADMIN").Info("GET KV")
-	payload, err := k.data.ToJSON()
+	payload, err := k.data.MarshalJSON()
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -273,7 +283,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, _ *http.Request) {
 	}
 	logger.WithPrefix("ADMIN").Warn("CLEARED TABLE")
 	data := json.New()
-	data.Set("result", "CLEARED TABLE")
+	data.Set("result", fmt.Sprint("CLEARED TABLE"))
 	payload, err := data.MarshalJSON()
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
@@ -285,7 +295,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, _ *http.Request) {
 }
 
 // handleGetKvSize processes HTTP GET requests for retrieving the size of the store.
-func (k *KV) handleGetKvSize(w http.ResponseWriter, _ *http.Request) {
+func (k *KV) handleGetSize(w http.ResponseWriter, _ *http.Request) {
 	data := json.New()
 	data.Set("result", map[string]interface{}{"size": k.Size()})
 	payload, err := data.MarshalJSON()
@@ -302,10 +312,6 @@ func (k *KV) handleGetKvSize(w http.ResponseWriter, _ *http.Request) {
 func (k *KV) AuthMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !k.auth {
-				next.ServeHTTP(w, r)
-				return
-			}
 			token := r.Header.Get("Authorization")
 			expected := fmt.Sprintf("Bearer %s", k.token)
 			if token == "" || token != expected {
@@ -322,21 +328,21 @@ func (k *KV) AuthMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 // Serve starts the HTTP server on the specified port with configured routes and middleware.
 func (k *KV) Serve(port int) error {
 	r := mux.NewRouter()
-	
+	// r.PathPrefix("/kv")
 
 	r.HandleFunc("/kv/{key}", k.handleGetKey).Methods("GET")
+	r.HandleFunc("/kv/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}).Methods("GET")
 	r.HandleFunc("/kv/{key}/{value}", k.handleSetKey).Methods("POST")
 	r.HandleFunc("/kv/{key}", k.handleDeleteKey).Methods("DELETE")
-	r.HandleFunc("/adm/kv", k.handleKvData).Methods("GET")
+	r.HandleFunc("/adm/kv", k.handleGetKv).Methods("GET")
 	r.HandleFunc("/adm/kv", k.handleClearKv).Methods("DELETE")
-	r.HandleFunc("/adm/size", k.handleGetKvSize).Methods("GET")
+	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
 	fmt.Printf("%s\n\n", styles.Accent.Styled(banner))
 	logger.Debug("Server started 🎉", "address", k.address, "port", port, "auth", k.auth)
-	err := http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(port)}, ":"), r)
-	if err != nil {
-		return err
-	}
+	logger.Fatal(http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(port)}, ":"), r))
 
 	return nil
 }

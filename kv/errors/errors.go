@@ -8,4 +8,5 @@ var (
 	ErrInvalidKey    = errors.New("invalid key")
 	ErrInvalidValue  = errors.New("invalid value")
 	ErrTableNotFound = errors.New("table not found")
+	ErrTableFull    = errors.New("table is at max capacity")
 )

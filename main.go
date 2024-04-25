@@ -2,10 +2,9 @@ package main
 
 import (
 	"errors"
-	"time"
 
-	"github.com/gookit/color"
-	"github.com/stelmanjones/termtools/spin"
+	"github.com/charmbracelet/log"
+	"github.com/stelmanjones/termtools/kv"
 )
 
 func retErr() error {
@@ -18,14 +17,8 @@ type kek struct {
 }
 
 func main() {
-	s := spin.New(spin.BouncingBar,
-		spin.WithPrefix("Loading Program "),
-		spin.WithColor(color.FgGreen),
-		spin.WithFinalMsg("Done!"))
-	s.Start()
-	time.Sleep(5 * time.Second)
-	s.Stop()
-
+	db := kv.New(kv.WithAuth("kekw1337"), kv.WithLimit(1))
+	log.Fatal(db.Serve(6666))
 	/*
 		i := 0
 		test := "Testing 123 string hello world"
