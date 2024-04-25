@@ -158,8 +158,8 @@ func (k *KV) Has(key string) bool {
 	return ok
 }
 
-// Delete removes a key and its associated value from the KV store.
-func (k *KV) Delete(key string) error {
+// Remove removes a key and its associated value from the KV store.
+func (k *KV) Remove(key string) error {
 	k.mu.Lock()
 	defer k.mu.Unlock()
 	k.data.Remove(key)
@@ -251,10 +251,10 @@ func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
-// handleDeleteKey processes HTTP DELETE requests for removing a key-value pair.
-func (k *KV) handleDeleteKey(w http.ResponseWriter, r *http.Request) {
+// handleRemoveKey processes HTTP DELETE requests for removing a key-value pair.
+func (k *KV) handleRemoveKey(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
-	k.Delete(p["key"])
+	k.Remove(p["key"])
 	data := json.New()
 	data.Set("result", fmt.Sprintf("DELETED %s", p["key"]))
 	payload, err := data.MarshalJSON()
@@ -345,7 +345,7 @@ func (k *KV) Serve(port int) error {
 		w.WriteHeader(http.StatusOK)
 	}).Methods("GET")
 	r.HandleFunc("/kv/{key}/{value}", k.handleSetKey).Methods("POST")
-	r.HandleFunc("/kv/{key}", k.handleDeleteKey).Methods("DELETE")
+	r.HandleFunc("/kv/{key}", k.handleRemoveKey).Methods("DELETE")
 	r.HandleFunc("/adm/kv", k.handleGetKv).Methods("GET")
 	r.HandleFunc("/adm/kv", k.handleClearKv).Methods("DELETE")
 	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")

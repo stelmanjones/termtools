@@ -1,18 +1,17 @@
 package examples
 
-import ( 
-	"github.com/stelmanjones/termtools/kv"
+import (
 	"github.com/charmbracelet/log"
+	"github.com/stelmanjones/termtools/kv"
 )
 
 func kvTest() {
 	db := kv.New()
 	log.Fatal(db.Serve(9999))
 
-
 	db.Get("key")
 	db.Set("key", "value")
-	db.Delete("key")
+	db.Remove("key")
 	db.Clear()
 	db.Keys()
 	db.Values()
