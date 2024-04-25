@@ -171,6 +171,19 @@ func (k *KV) Clear() error {
 	return nil
 }
 
+
+// Has checks if the specified key exists in the KV store.
+func (k *KV) Has(key string) bool {
+	k.mu.RLock()
+	defer k.mu.RUnlock()
+	for _, k := range k.data.Keys() {
+		if k.(string) == key {
+			return true
+		}
+	}
+	return false
+}
+
 // Size returns the number of items currently stored in the KV store.
 func (k *KV) Size() int {
 	k.mu.RLock()
