@@ -3,13 +3,11 @@ package kv
 
 import (
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	json "github.com/bitly/go-simplejson"
 	"github.com/charmbracelet/log"
@@ -33,19 +31,6 @@ type KV struct {
 	limit   int
 }
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-// generateRandomString creates a random string of a specified length using a predefined charset.
-func generateRandomString(length int) string {
-	b := make([]byte, length)
-	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
-	}
-	return string(b)
-}
-
 var lvl = func() log.Level {
 	lv := os.Getenv("LOG")
 	switch strings.ToUpper(lv) {
@@ -66,59 +51,9 @@ var lvl = func() log.Level {
 
 var logger = log.NewWithOptions(os.Stderr, log.Options{
 	Level:           lvl,
-	Prefix:          "EZKV-SERVER",
+	Prefix:          "KV",
 	ReportTimestamp: true,
 })
-
-// New creates a new KV instance with the provided options.
-func New(options ...Option) *KV {
-	k := &KV{
-		mu:      &sync.RWMutex{},
-		data:    hashmap.New(),
-		auth:    false,
-		token:   "",
-		address: "127.0.0.1",
-		limit:   10000,
-	}
-
-	for _, option := range options {
-		option(k)
-	}
-
-	return k
-}
-
-// WithAuth configures the KV instance to require authentication with the provided token.
-func WithAuth(token string) Option {
-	return func(k *KV) {
-		k.auth = true
-		k.token = token
-		logger.Warn(styles.Warning.Styled("AUTH ENABLED"))
-	}
-}
-
-// WithAddress sets the network address for the KV instance.
-func WithAddress(address string) Option {
-	return func(k *KV) {
-		k.address = address
-	}
-}
-
-// WithLimit sets the maximum number of items allowed in the KV store.
-func WithLimit(limit int) Option {
-	return func(k *KV) {
-		k.limit = limit
-	}
-}
-
-// WithRandomAuth configures the KV instance to require authentication with a randomly generated token.
-func WithRandomAuth() Option {
-	return func(k *KV) {
-		k.auth = true
-		k.token = generateRandomString(256)
-		logger.Warn(styles.Warning.Styled("AUTH ENABLED"), "token", k.token)
-	}
-}
 
 // Data returns a snapshot of the current data in the KV store.
 func (k *KV) Data() *hashmap.Map {
@@ -215,9 +150,7 @@ func (k *KV) handleGetKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	data := json.New()
-	data.Set("result", map[string]interface{}{params["key"]: res})
-	payload, err := data.MarshalJSON()
+	payload, err := kvResult(map[string]interface{}{params["key"]: res})
 	if err != nil {
 		logger.Error("GET ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -238,9 +171,7 @@ func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	data := json.New()
-	data.Set("result", map[string]interface{}{"key": params["key"], "value": params["value"]})
-	payload, err := data.MarshalJSON()
+	payload, err := kvResult(map[string]interface{}{params["key"]: params["value"]})
 	if err != nil {
 		logger.Error("SET ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -255,9 +186,7 @@ func (k *KV) handleSetKey(w http.ResponseWriter, r *http.Request) {
 func (k *KV) handleRemoveKey(w http.ResponseWriter, r *http.Request) {
 	p := mux.Vars(r)
 	k.Remove(p["key"])
-	data := json.New()
-	data.Set("result", fmt.Sprintf("DELETED %s", p["key"]))
-	payload, err := data.MarshalJSON()
+	payload, err := kvResult(fmt.Sprintf("DELETED %s", p["key"]))
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -292,9 +221,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	logger.WithPrefix("ADMIN").Warn("CLEARED TABLE")
-	data := json.New()
-	data.Set("result", fmt.Sprint("CLEARED TABLE"))
-	payload, err := data.MarshalJSON()
+	payload, err := kvResult(fmt.Sprint("CLEARED TABLE"))
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -306,9 +233,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, _ *http.Request) {
 
 // handleGetKvSize processes HTTP GET requests for retrieving the size of the store.
 func (k *KV) handleGetSize(w http.ResponseWriter, _ *http.Request) {
-	data := json.New()
-	data.Set("result", map[string]interface{}{"size": k.Size()})
-	payload, err := data.MarshalJSON()
+	payload, err := kvResult(map[string]interface{}{"size": k.Size()})
 	if err != nil {
 		logger.Error("ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)

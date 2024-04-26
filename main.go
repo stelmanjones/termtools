@@ -17,7 +17,10 @@ type kek struct {
 }
 
 func main() {
-	db := kv.New(kv.WithAuth("kekw1337"), kv.WithLimit(1))
+	db := kv.New().
+		WithAuth("kekw1337").
+		WithLimit(1000).
+		Build()
 	log.Fatal(db.Serve(6666))
 	/*
 		i := 0

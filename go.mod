@@ -26,6 +26,7 @@ require (
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/stelmanjones/termtools/styles v0.0.0-20240421154834-24bb8b0366d8 // indirect
+	github.com/wI2L/jettison v0.7.4 // indirect
 	golang.org/x/term v0.19.0 // indirect
 )
 

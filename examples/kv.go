@@ -6,7 +6,11 @@ import (
 )
 
 func kvTest() {
-	db := kv.New()
+
+	db := kv.New().
+		WithAuth("kekw1337").
+		WithLimit(1000).
+		Build()
 	log.Fatal(db.Serve(9999))
 
 	db.Get("key")

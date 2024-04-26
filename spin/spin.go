@@ -36,6 +36,8 @@ import (
 var isWindows = runtime.GOOS == "windows"
 var isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
 
+// TODO: Use builder pattern for the Spinner struct.
+
 // Spinner represents a thread-safe spinner with customizable options such as character sets, prefix, suffix, and color.
 type Spinner struct {
 	mu         *sync.RWMutex
@@ -131,11 +133,7 @@ func isTerminal(s *Spinner) bool {
 	return term.IsTerminal(int(s.WriterFile.Fd()))
 }
 
-// WithWriterFile adds the given writer to the spinner. This
-// function should be favored over directly assigning to
-// the struct value. Unlike WithWriter, this function allows
-// us to check if displaying to a terminal (enable spinning) or
-// not (disable spinning). Supersedes WithWriter()
+// WithWriterFile adds the given writer to the spinner.
 func WithWriterFile(f *os.File) Option {
 	return func(s *Spinner) {
 		s.mu.Lock()
