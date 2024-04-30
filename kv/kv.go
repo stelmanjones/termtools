@@ -114,8 +114,13 @@ func (k *KV) SetMany(keyvals ...interface{}) error {
 	k.mux.Lock()
 	defer k.mux.Unlock()
 	for i := 0; i < len(keyvals); i += 2 {
+		if k.limit > 0 && k.data.Size() >= k.limit {
+			logger.Warn(styles.Warning.Styled("TABLE FULL"))
+			return errors.ErrTableFull
+		}
 		if !k.Has(keyvals[i].(string)) {
 			k.data.Put(keyvals[i].(string), keyvals[i+1])
+			logger.Debug(styles.Warning.Styled("SET"), keyvals[i].(string), keyvals[i+1])
 		}
 		logger.Error("Key '%v' already exists.", keyvals[i].(string))
 		return errors.ErrKeyExists
@@ -146,6 +151,7 @@ func (k *KV) UpdateMany(keyvals ...interface{}) error {
 			return errors.ErrKeyNotFound
 		}
 		k.data.Put(keyvals[i].(string), keyvals[i+1])
+		logger.Debug(styles.AccentBlue.Styled("UPDATED"), keyvals[i].(string), keyvals[i+1])
 	}
 	return nil
 }
@@ -171,6 +177,7 @@ func (k *KV) GetMany(keys ...string) ([]interface{}, error) {
 			res = append(res, value)
 		}
 	}
+	logger.Debug(styles.AccentGreen.Styled("GET"), "result", res)
 	return res, nil
 }
 

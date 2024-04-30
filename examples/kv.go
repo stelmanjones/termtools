@@ -14,8 +14,11 @@ func kvTest() {
 	log.Fatal(db.Serve(9999))
 
 	db.Get("key")
+	db.GetMany("key", "key2")
 	db.Set("key", "value")
+	db.SetMany("key", "value")
 	db.Remove("key")
+	db.RemoveMany("key", "key2")
 	db.Clear()
 	db.Keys()
 	db.Values()
