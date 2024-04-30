@@ -1,3 +1,5 @@
+
+// Package usure provides a few assertions.
 package usure
 
 import (
@@ -7,26 +9,32 @@ import (
 	"github.com/gookit/color"
 )
 
+// Nil checks if a is nil.
 func Nil(a any) bool {
 	return a == nil
 }
 
+// NotNil checks if a is not nil.
 func NotNil(a any) bool {
 	return a != nil
 }
 
+// IsInstance checks if a is an instance of T.
 func IsInstance[T any](a T) bool {
 	return reflect.TypeOf(a) == reflect.TypeFor[T]()
 }
 
+// Equal checks if a and b are equal.
 func Equal[T any](a, b T) bool {
 	return reflect.DeepEqual(a, b)
 }
 
+// NotEqual checks if a and b are not equal.
 func NotEqual[T any](a, b T) bool {
 	return !reflect.DeepEqual(a, b)
 }
 
+// ExpectEqual checks if a and b are equal and prints a message if the condition is false.
 func ExpectEqual[T any](msg string, a, b T) bool {
 	if !Equal(a, b) {
 		log.Errorf("%s: %v %v is not equal to %v %v",
@@ -38,23 +46,4 @@ func ExpectEqual[T any](msg string, a, b T) bool {
 		return false
 	}
 	return true
-}
-
-// HACK: Dont know if this function makes any sense
-func ExpectError(msg string, r ...any) any {
-	if r == nil {
-		return nil
-	}
-	for _, v := range r {
-		switch v.(type) {
-		case error:
-			{
-				log.Errorf("%s:  %v", color.FgRed.Render(msg), v)
-				return nil
-			}
-		default:
-		}
-
-	}
-	return r
 }

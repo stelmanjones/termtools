@@ -50,13 +50,14 @@ func WithRandomBearerToken() *Builder {
 // Build returns a new KV instance with the configured options.
 func (b *Builder) Build() *KV {
 	return &KV{
-		mu:   &sync.RWMutex{},
+		mux:  &sync.RWMutex{},
 		data: hashmap.New(),
 
 		auth:    b.auth,
 		token:   b.token,
 		address: b.address,
 		limit:   b.limit,
+		batch:   []interface{}{},
 	}
 }
 

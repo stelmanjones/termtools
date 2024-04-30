@@ -1,5 +1,7 @@
 package spin
 
+//TODO: Change charset type to []rune
+
 // CharSet is a type alias for a slice of strings.
 type CharSet = []string
 

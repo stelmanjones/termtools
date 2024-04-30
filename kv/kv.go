@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	json "github.com/bitly/go-simplejson"
+	sjson "github.com/bitly/go-simplejson"
 	"github.com/charmbracelet/log"
 	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/gookit/color"
@@ -23,13 +23,42 @@ type Option func(*KV)
 
 // KV represents a key-value store with optional authentication and network address configuration.
 type KV struct {
-	mu      *sync.RWMutex
+	mux     *sync.RWMutex
 	data    *hashmap.Map
 	auth    bool
 	token   string
 	address string
 	limit   int
+	batch   []interface{}
 }
+
+// func (k *KV) AddBatch(keyvals ...interface{}) error {
+// 	k.mux.Lock()
+// 	defer k.mux.Unlock()
+// 	if len(keyvals)%2 != 0 {
+// 		return errors.ErrMissingValue
+// 	}
+// 	logger.Debug("ADDED TO BATCH", "keyvals", keyvals)
+// 	k.batch = append(k.batch, keyvals...)
+// 	return nil
+// }
+//
+// func (k *KV) CancelBatch() {
+// 	k.mux.Lock()
+// 	defer k.mux.Unlock()
+// 	logger.Debug("Cancelled batch")
+// 	k.batch = []interface{}{}
+// }
+//
+// func (k *KV) CommitBatch() {
+// 	k.mux.Lock()
+// 	defer k.mux.Unlock()
+// 	for i := 0; i < len(k.batch); i += 2 {
+// 		k.data.Put(k.batch[i], k.batch[i+1])
+// 	}
+// 	logger.Debug("Committed batch")
+// 	k.batch = []interface{}{}
+// }
 
 var lvl = func() log.Level {
 	lv := os.Getenv("LOG")
@@ -66,18 +95,65 @@ func (k *KV) Set(key string, value interface{}) error {
 		logger.Warn(styles.Warning.Styled("TABLE FULL"))
 		return errors.ErrTableFull
 	}
-	k.mu.Lock()
-	defer k.mu.Unlock()
-	k.data.Put(key, value)
+	k.mux.Lock()
+	defer k.mux.Unlock()
+	if !k.Has(key) {
+		k.data.Put(key, value)
+		logger.Debug(styles.Warning.Styled("SET"), key, value)
+		return nil
+	}
+	logger.Error("Key '%v' already exists.", key)
+	return errors.ErrKeyExists
+}
 
-	logger.Debug(styles.Warning.Styled("SET"), key, value)
+// SetMany stores multiple key-value pairs in the KV store.
+func (k *KV) SetMany(keyvals ...interface{}) error {
+	if len(keyvals)%2 != 0 {
+		return errors.ErrMissingValue
+	}
+	k.mux.Lock()
+	defer k.mux.Unlock()
+	for i := 0; i < len(keyvals); i += 2 {
+		if !k.Has(keyvals[i].(string)) {
+			k.data.Put(keyvals[i].(string), keyvals[i+1])
+		}
+		logger.Error("Key '%v' already exists.", keyvals[i].(string))
+		return errors.ErrKeyExists
+	}
+	return nil
+}
+
+// Update updates the value associated with a key in the KV store.
+func (k *KV) Update(key string, value interface{}) error {
+	k.mux.Lock()
+	defer k.mux.Unlock()
+	if !k.Has(key) {
+		return errors.ErrKeyNotFound
+	}
+	k.data.Put(key, value)
+	logger.Debug(styles.AccentBlue.Styled("UPDATED"), key, value)
+	return nil
+}
+
+// UpdateMany updates multiple key-value pairs in the KV store.
+func (k *KV) UpdateMany(keyvals ...interface{}) error {
+	if len(keyvals)%2 != 0 {
+		return errors.ErrMissingValue
+	}
+	for i := 0; i < len(keyvals); i += 2 {
+		if !k.Has(keyvals[i].(string)) {
+			logger.Error("Key '%v' does not exist.", keyvals[i].(string))
+			return errors.ErrKeyNotFound
+		}
+		k.data.Put(keyvals[i].(string), keyvals[i+1])
+	}
 	return nil
 }
 
 // Get retrieves a value associated with a key from the KV store.
 func (k *KV) Get(key string) (interface{}, error) {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
+	k.mux.RLock()
+	defer k.mux.RUnlock()
 	if value, found := k.data.Get(key); found != false {
 		logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
 		return value, nil
@@ -85,41 +161,62 @@ func (k *KV) Get(key string) (interface{}, error) {
 	return nil, errors.ErrKeyNotFound
 }
 
+// GetMany retrieves multiple values from the KV store.
+func (k *KV) GetMany(keys ...string) ([]interface{}, error) {
+	k.mux.RLock()
+	defer k.mux.RUnlock()
+	var res []interface{}
+	for _, key := range keys {
+		if value, found := k.data.Get(key); found {
+			res = append(res, value)
+		}
+	}
+	return res, nil
+}
+
 // Has checks if a key exists in the KV store.
 func (k *KV) Has(key string) bool {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
+	k.mux.RLock()
+	defer k.mux.RUnlock()
 	_, ok := k.data.Get(key)
 	return ok
 }
 
 // Remove removes a key and its associated value from the KV store.
 func (k *KV) Remove(key string) error {
-	k.mu.Lock()
-	defer k.mu.Unlock()
+	k.mux.Lock()
+	defer k.mux.Unlock()
 	k.data.Remove(key)
 	logger.Debug(styles.AccentRed.Styled("DELETE"), key)
 	return nil
 }
 
+// RemoveMany removes multiple keys and their associated values from the KV store.
+func (k *KV) RemoveMany(keys ...string) error {
+	for _, key := range keys {
+		k.Remove(key)
+	}
+	return nil
+}
+
 // Keys returns a slice of all keys currently stored in the KV store.
 func (k *KV) Keys() []interface{} {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
+	k.mux.RLock()
+	defer k.mux.RUnlock()
 	return k.data.Keys()
 }
 
 // Values returns a slice of all values currently stored in the KV store.
 func (k *KV) Values() []interface{} {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
+	k.mux.RLock()
+	defer k.mux.RUnlock()
 	return k.data.Values()
 }
 
 // Clear removes all keys and values from the KV store.
 func (k *KV) Clear() error {
-	k.mu.Lock()
-	defer k.mu.Unlock()
+	k.mux.Lock()
+	defer k.mux.Unlock()
 	k.data.Clear()
 	logger.Warn(color.Bold.Sprint("CLEARED TABLE"))
 	return nil
@@ -127,16 +224,16 @@ func (k *KV) Clear() error {
 
 // Size returns the number of items currently stored in the KV store.
 func (k *KV) Size() int {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
+	k.mux.RLock()
+	defer k.mux.RUnlock()
 	return k.data.Size()
 }
 
 // ToJSON returns the KV store data as a JSON string.
 func (k *KV) ToJSON() ([]byte, error) {
-	k.mu.RLock()
-	defer k.mu.RUnlock()
-	j := json.New()
+	k.mux.RLock()
+	defer k.mux.RUnlock()
+	j := sjson.New()
 	j.Set("data", k.data)
 	return j.MarshalJSON()
 }
@@ -243,6 +340,101 @@ func (k *KV) handleGetSize(w http.ResponseWriter, _ *http.Request) {
 	w.Write(payload)
 }
 
+func (k *KV) handleJSON(w http.ResponseWriter, r *http.Request) {
+
+	data, err := sjson.NewFromReader(r.Body)
+	inserted := sjson.New()
+	if v, err := data.Map(); err == nil {
+		for key, val := range v {
+			k.Set(key, val)
+			inserted.Set(key, val)
+		}
+	} else if v, err := data.Array(); err == nil {
+		for _, val := range v {
+			switch val.(type) {
+			case map[string]any:
+				for key, val := range val.(map[string]any) {
+					k.Set(key, val)
+					inserted.Set(key, val)
+				}
+			}
+		}
+
+	} else {
+		logger.Error("ERROR", "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	payload, err := kvResult(inserted.Interface())
+	if err != nil {
+		logger.Error("ERROR", "err", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
+}
+
+// TODO: Improve batching function.
+
+func (k *KV) handleBatch(w http.ResponseWriter, r *http.Request) {
+	inserted := sjson.New()
+	switch r.Method {
+	case "POST":
+		data, err := sjson.NewFromReader(r.Body)
+		if err != nil {
+			logger.Error("ERROR", "err", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+
+		if _, err := data.Map(); err == nil {
+
+			b, err := data.MarshalJSON()
+			if err != nil {
+				logger.Error("ERROR", "err", err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+			}
+			k.data.FromJSON(b)
+			inserted.UnmarshalJSON(b)
+			logger.Debug(inserted.Interface())
+
+		} else if v, err := data.Array(); err == nil {
+			keyvals := make([]interface{}, 0)
+			for _, val := range v {
+				switch val.(type) {
+				case map[string]any:
+					for key, val := range val.(map[string]any) {
+						keyvals = append(keyvals, key, val)
+					}
+					k.SetMany(keyvals...)
+				}
+			}
+
+		} else {
+			logger.Error("ERROR", "err", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		payload, err := kvResult(inserted.Interface())
+		if err != nil {
+			logger.Error("ERROR", "err", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+
+	case "GET":
+		payload, err := kvResult(k.batch)
+		if err != nil {
+			logger.Error("ERROR", "err", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(payload)
+	default:
+		http.Error(w, "Invalid method", http.StatusBadRequest)
+	}
+}
+
 // AuthMiddleware returns a middleware function that enforces authentication for HTTP requests.
 func (k *KV) AuthMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
@@ -264,11 +456,13 @@ func (k *KV) AuthMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 func (k *KV) Serve(port int) error {
 	r := mux.NewRouter()
 	// r.PathPrefix("/kv")
-
+	//
+	r.HandleFunc("/kv", k.handleJSON).Methods("POST")
 	r.HandleFunc("/kv/{key}", k.handleGetKey).Methods("GET")
 	r.HandleFunc("/kv/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}).Methods("GET")
+	r.HandleFunc("/kv/tx", k.handleBatch).Methods("POST", "GET")
 	r.HandleFunc("/kv/{key}/{value}", k.handleSetKey).Methods("POST")
 	r.HandleFunc("/kv/{key}", k.handleRemoveKey).Methods("DELETE")
 	r.HandleFunc("/adm/kv", k.handleGetKv).Methods("GET")

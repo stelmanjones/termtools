@@ -22,6 +22,7 @@ func main() {
 		WithLimit(1000).
 		Build()
 	log.Fatal(db.Serve(6666))
+
 	/*
 		i := 0
 		test := "Testing 123 string hello world"
