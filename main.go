@@ -18,8 +18,6 @@ type kek struct {
 }
 
 func main() {
-	nums := []int{10, 5, 30, 15, 20, 25, 35, 40, 45, }
-	log.Info(internal.BubbleSort(nums))
 	/*db := kv.New().
 		WithAuth("kekw1337").
 		WithLimit(1000).
