@@ -4,7 +4,8 @@ import (
 	"errors"
 
 	"github.com/charmbracelet/log"
-	"github.com/stelmanjones/termtools/kv"
+	"github.com/stelmanjones/termtools/internal"
+	//"github.com/stelmanjones/termtools/kv"
 )
 
 func retErr() error {
@@ -17,7 +18,9 @@ type kek struct {
 }
 
 func main() {
-	db := kv.New().
+	nums := []int{10, 5, 30, 15, 20, 25, 35, 40, 45, }
+	log.Info(internal.BubbleSort(nums))
+	/*db := kv.New().
 		WithAuth("kekw1337").
 		WithLimit(1000).
 		Build()

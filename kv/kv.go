@@ -89,6 +89,7 @@ func (k *KV) Data() *hashmap.Map {
 	return k.data
 }
 
+
 // Set stores a value associated with a key in the KV store.
 func (k *KV) Set(key string, value interface{}) error {
 	if k.limit > 0 && k.data.Size() >= k.limit {
@@ -114,6 +115,7 @@ func (k *KV) SetMany(keyvals ...interface{}) error {
 	k.mux.Lock()
 	defer k.mux.Unlock()
 	for i := 0; i < len(keyvals); i += 2 {
+
 		if k.limit > 0 && k.data.Size() >= k.limit {
 			logger.Warn(styles.Warning.Styled("TABLE FULL"))
 			return errors.ErrTableFull
