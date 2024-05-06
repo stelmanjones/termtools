@@ -10,7 +10,9 @@ replace github.com/stelmanjones/termtools/usure => ./usure
 
 replace github.com/stelmanjones/termtools/spin => ./spin
 
-go 1.22.1
+replace github.com/stelmanjones/termtools/remap => ./remap
+
+go 1.22.2
 
 require (
 	github.com/charmbracelet/log v0.4.0
@@ -43,6 +45,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/stelmanjones/termtools/remap v0.0.0-00010101000000-000000000000
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/sys v0.19.0 // indirect
