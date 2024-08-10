@@ -10,12 +10,15 @@
   key-value store with built in server and REST API.
 - [prompt](https://github.com/stelmanjones/termtools/prompt): ❓ A small library of prompts for the terminal.
 - [usure](https://github.com/stelmanjones/termtools/usure): ‼️ Tiny library of assertions and test functions.
+- [text](https://github.com/stelmanjones/termtools/text) 🔠 A few basic text alignment and utility functions.
+- [tty](https://github.com/stelmanjones/termtools/tty) 🖥️ A tiny set of terminal cursor and screen manipulation functions.
 <!-- repos:end -->
 
 <p align="center">
   <img src="https://img.shields.io/github/last-commit/stelmanjones/termtools?logo=go&link=https%3A%2F%2Fpkg.go.dev%2Fstelmanjones%2Ftermtools" alt="Commits">
 
-
 </p>
 
 ---
+
+--
