@@ -24,11 +24,11 @@ type Option func(*KV)
 type KV struct {
 	mux     *sync.RWMutex
 	data    *hashmap.Map
-	auth    bool
 	token   string
 	address string
-	limit   int
 	batch   []interface{}
+	limit   int
+	auth    bool
 }
 
 // func (k *KV) AddBatch(keyvals ...interface{}) error {
@@ -87,7 +87,6 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 func (k *KV) Data() *hashmap.Map {
 	return k.data
 }
-
 
 // Set stores a value associated with a key in the KV store.
 func (k *KV) Set(key string, value interface{}) error {
@@ -161,7 +160,7 @@ func (k *KV) UpdateMany(keyvals ...interface{}) error {
 func (k *KV) Get(key string) (interface{}, error) {
 	k.mux.RLock()
 	defer k.mux.RUnlock()
-	if value, found := k.data.Get(key); found != false {
+	if value, found := k.data.Get(key); found {
 		logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
 		return value, nil
 	}
@@ -326,7 +325,7 @@ func (k *KV) handleClearKv(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	logger.WithPrefix("ADMIN").Warn("CLEARED TABLE")
-	payload, err := kvResult(fmt.Sprint("CLEARED TABLE"))
+	payload, err := kvResult("CLEARED TABLE")
 	if err != nil {
 		logger.Error("DELETE ERROR", "err", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -349,7 +348,6 @@ func (k *KV) handleGetSize(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (k *KV) handleJSON(w http.ResponseWriter, r *http.Request) {
-
 	data, err := sjson.NewFromReader(r.Body)
 	inserted := sjson.New()
 	if v, err := data.Map(); err == nil {
@@ -359,15 +357,14 @@ func (k *KV) handleJSON(w http.ResponseWriter, r *http.Request) {
 		}
 	} else if v, err := data.Array(); err == nil {
 		for _, val := range v {
-			switch val.(type) {
+			switch val := val.(type) {
 			case map[string]any:
-				for key, val := range val.(map[string]any) {
+				for key, val := range val {
 					k.Set(key, val)
 					inserted.Set(key, val)
 				}
 			}
 		}
-
 	} else {
 		logger.Error("ERROR", "err", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -409,9 +406,9 @@ func (k *KV) handleBatch(w http.ResponseWriter, r *http.Request) {
 		} else if v, err := data.Array(); err == nil {
 			keyvals := make([]interface{}, 0)
 			for _, val := range v {
-				switch val.(type) {
+				switch val := val.(type) {
 				case map[string]any:
-					for key, val := range val.(map[string]any) {
+					for key, val := range val {
 						keyvals = append(keyvals, key, val)
 					}
 					k.SetMany(keyvals...)
@@ -463,6 +460,7 @@ func (k *KV) AuthMiddleware(_ *mux.Router) mux.MiddlewareFunc {
 // Serve starts the HTTP server on the specified port with configured routes and middleware.
 func (k *KV) Serve(port int) error {
 	r := mux.NewRouter()
+
 	// r.PathPrefix("/kv")
 	//
 	r.HandleFunc("/kv", k.handleJSON).Methods("POST")

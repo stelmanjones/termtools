@@ -1,10 +1,6 @@
 package spin
 
 import (
-	"atomicgo.dev/cursor"
-	"atomicgo.dev/keyboard"
-	"atomicgo.dev/keyboard/keys"
-
 	"fmt"
 	"io"
 	"math"
@@ -15,32 +11,38 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"atomicgo.dev/cursor"
+	"atomicgo.dev/keyboard"
+	"atomicgo.dev/keyboard/keys"
+
 	"golang.org/x/term"
 
 	"github.com/gookit/color"
 )
 
-var isWindows = runtime.GOOS == "windows"
-var isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
+var (
+	isWindows                  = runtime.GOOS == "windows"
+	isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
+)
 
 // TODO: Use builder pattern for the Spinner struct.
 
 // Spinner represents a thread-safe spinner with customizable options such as character sets, prefix, suffix, and color.
 type Spinner struct {
-	mu         *sync.RWMutex
-	variant    SpinnerVariant
-	running    bool
-	stopChan   chan struct{}
-	CancelKeys []keys.KeyCode
 	Writer     io.Writer
 	WriterFile *os.File
-	Color      color.Color
+	stopChan   chan struct{}
+	mu         *sync.RWMutex
+	PreUpdate  func(s *Spinner)
+	PostUpdate func(s *Spinner)
 	FinalMsg   string
 	Prefix     string
 	Suffix     string
-	PreUpdate  func(s *Spinner)
-	PostUpdate func(s *Spinner)
 	lastOut    string
+	CancelKeys []keys.KeyCode
+	variant    SpinnerVariant
+	running    bool
+	Color      color.Color
 }
 
 // New creates a new Spinner with the provided CharSet, delay, and options.
@@ -52,7 +54,7 @@ func New(variant SpinnerVariant, options ...Option) *Spinner {
 		CancelKeys: []keys.KeyCode{keys.CtrlC, keys.Escape},
 		Writer:     os.Stdout,
 		stopChan:   make(chan struct{}),
-		//keyChan:    make(chan keys.Key),
+		// keyChan:    make(chan keys.Key),
 		Color:      color.FgDefault,
 		WriterFile: os.Stdout,
 		Prefix:     "",
@@ -144,9 +146,7 @@ func (s *Spinner) Start() {
 	s.mu.Unlock()
 
 	go keyboard.Listen(func(key keys.Key) (stop bool, err error) {
-
 		for _, c := range s.CancelKeys {
-
 			if key.Code == c {
 				s.stopChan <- struct{}{}
 				return true, nil // Stop listener by returning true on Ctrl+C
@@ -175,9 +175,7 @@ func (s *Spinner) Start() {
 				}
 			}
 		}
-
 	}()
-
 }
 
 // Stop stops the spinner, prints the final message if set, and signals the stop channel.

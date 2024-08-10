@@ -7,6 +7,7 @@ import (
 	"atomicgo.dev/keyboard/keys"
 	"github.com/muesli/termenv"
 	"github.com/stelmanjones/termtools/styles"
+	"github.com/stelmanjones/termtools/usure"
 )
 
 var footer = "\n ↓/↑, tab/S-tab, j/k: down/up • enter: select\n"
@@ -23,7 +24,6 @@ type SelectionPrompt[T Value] struct {
 // It takes a variadic number of choices of type T.
 func NewSelectionPrompt[T Value](choices ...T) *SelectionPrompt[T] {
 	p := &SelectionPrompt[T]{
-
 		Base: Base[T]{
 			label:    "",
 			selector: styles.Selector,
@@ -35,7 +35,6 @@ func NewSelectionPrompt[T Value](choices ...T) *SelectionPrompt[T] {
 	p.Choices = append(p.Choices, choices...)
 
 	return p
-
 }
 
 // AddChoice appends a new choice to the selection prompt's list of choices.
@@ -93,7 +92,6 @@ func (p *SelectionPrompt[T]) render(out *termenv.Output) {
 		}
 	}
 	for i, option := range p.Choices {
-
 		if i == p.index {
 			_, err := sb.WriteString(p.selector + styles.SelectedOption.Styled(fmt.Sprintf("  %v\n", option)))
 			if err != nil {
@@ -105,7 +103,6 @@ func (p *SelectionPrompt[T]) render(out *termenv.Output) {
 				fmt.Println(err)
 			}
 		}
-
 	}
 
 	_, err := sb.WriteString(styles.Dimmed.Styled(footer))
@@ -113,14 +110,13 @@ func (p *SelectionPrompt[T]) render(out *termenv.Output) {
 		fmt.Println(err)
 	}
 	out.WriteString(sb.String())
-
 }
 
 // Run executes the selection prompt and returns the selected choice and any error encountered.
 // If there are no options provided, it will panic.
 func (p *SelectionPrompt[T]) Run() (*T, error) {
-	if len(p.Choices) == 0 {
-		panic("No options provided")
+	if usure.Equal(len(p.Choices), 0) {
+		return new(T), ErrNoChoices
 	}
 	out := termenv.DefaultOutput()
 	out.HideCursor()
@@ -129,7 +125,6 @@ func (p *SelectionPrompt[T]) Run() (*T, error) {
 	ch := make(chan keys.Key)
 	go ListenForInput(ch)
 
-	//fmt.Printf("opts: %d",len(p.Options))
 outer:
 	for key := range ch {
 		switch key.Code {
@@ -159,5 +154,4 @@ outer:
 		out.ClearLines(len(p.Choices) + 4)
 	}
 	return &p.Choices[p.index], nil
-
 }

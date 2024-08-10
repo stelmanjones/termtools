@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/stelmanjones/termtools/remap"
+	"github.com/stelmanjones/termtools/hotkeys"
 )
 
 var logger = log.NewWithOptions(os.Stderr, log.Options{
@@ -14,21 +14,22 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 	ReportTimestamp: true,
 })
 
+
 var remappedKeys = map[string]func(){
 	"a": func() {
-		remap.DragMouseLeft(20)
+		hotkeys.DragMouseLeft(20)
 	},
 	"d": func() {
-		remap.DragMouseRight(20)
+		hotkeys.DragMouseRight(20)
 	},
 	"w": func() {
-		remap.DragMouseUp(20)
+		hotkeys.DragMouseUp(20)
 	},
 	"s": func() {
-		remap.DragMouseDown(20)
+		hotkeys.DragMouseDown(20)
 	},
 }
 
 func main() {
-	remap.Start(remappedKeys)
+	hotkeys.Start(remappedKeys)
 }

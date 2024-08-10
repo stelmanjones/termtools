@@ -1,11 +1,17 @@
 {
-  "name": ".scripts",
-  "module": "index.ts",
-  "type": "module",
+  "name": "scripts",
+  "module": "*.ts",
+  "scripts": {
+    "tidy": "bun run tidy.ts",
+    "examples": "bun run print_examples.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0"
   }
 }

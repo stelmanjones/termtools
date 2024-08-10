@@ -14,10 +14,10 @@ var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Builder is a builder for KV.
 type Builder struct {
-	auth    bool
 	token   string
 	address string
 	limit   int
+	auth    bool
 }
 
 // WithAuth sets the authentication flag and token for the KV.
