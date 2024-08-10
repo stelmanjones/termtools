@@ -1,6 +1,7 @@
 package tty
 
 import (
+	"io"
 	"os"
 	"strconv"
 )
@@ -36,11 +37,11 @@ const (
 )
 
 // Output is the output writer.
-var Output = os.Stdout
+var Output io.Writer = os.Stdout
 
 // SaveScreen saves the screen.
 func SaveScreen() (err error) {
-	if _, err = Output.WriteString(SaveSeq); err != nil {
+	if _, err = Output.Write([]byte(SaveSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -48,7 +49,7 @@ func SaveScreen() (err error) {
 
 // RestoreScreen restores the screen.
 func RestoreScreen() (err error) {
-	if _, err = Output.WriteString(RestoreSeq); err != nil {
+	if _, err = Output.Write([]byte(RestoreSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -56,7 +57,7 @@ func RestoreScreen() (err error) {
 
 // ClearScreen clears the screen.
 func ClearScreen() (err error) {
-	if _, err = Output.WriteString(ClearSeq); err != nil {
+	if _, err = Output.Write([]byte(ClearSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -64,7 +65,7 @@ func ClearScreen() (err error) {
 
 // EnterAltScreen enters the alternate screen.
 func EnterAltScreen() (err error) {
-	if _, err = Output.WriteString(EnterAltScreenSeq); err != nil {
+	if _, err = Output.Write([]byte(EnterAltScreenSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -72,7 +73,7 @@ func EnterAltScreen() (err error) {
 
 // LeaveAltScreen leaves the alternate screen.
 func LeaveAltScreen() (err error) {
-	if _, err = Output.WriteString(LeaveAltScreenSeq); err != nil {
+	if _, err = Output.Write([]byte(LeaveAltScreenSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -80,7 +81,7 @@ func LeaveAltScreen() (err error) {
 
 // CursorHome moves the cursor to the home position.
 func CursorHome() (err error) {
-	if _, err = Output.WriteString(CursorHomeSeq); err != nil {
+	if _, err = Output.Write([]byte(CursorHomeSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -88,7 +89,7 @@ func CursorHome() (err error) {
 
 // CursorUp moves the cursor up n rows.
 func CursorUp(n int) (err error) {
-	if _, err = Output.WriteString(CursorUpSeq + strconv.Itoa(n)); err != nil {
+	if _, err = Output.Write([]byte(CursorUpSeq + strconv.Itoa(n))); err != nil {
 		return err
 	}
 	return nil
@@ -96,7 +97,7 @@ func CursorUp(n int) (err error) {
 
 // CursorDown moves the cursor down n rows.
 func CursorDown(n int) (err error) {
-	if _, err = Output.WriteString(CursorDownSeq + strconv.Itoa(n)); err != nil {
+	if _, err = Output.Write([]byte(CursorDownSeq + strconv.Itoa(n))); err != nil {
 		return err
 	}
 	return nil
@@ -104,7 +105,7 @@ func CursorDown(n int) (err error) {
 
 // CursorRight moves the cursor right n columns.
 func CursorRight(n int) (err error) {
-	if _, err = Output.WriteString(CursorRightSeq + strconv.Itoa(n)); err != nil {
+	if _, err = Output.Write([]byte(CursorRightSeq + strconv.Itoa(n))); err != nil {
 		return err
 	}
 	return nil
@@ -112,7 +113,7 @@ func CursorRight(n int) (err error) {
 
 // CursorLeft moves the cursor left n columns.
 func CursorLeft(n int) (err error) {
-	if _, err = Output.WriteString(CursorLeftSeq + strconv.Itoa(n)); err != nil {
+	if _, err = Output.Write([]byte(CursorLeftSeq + strconv.Itoa(n))); err != nil {
 		return err
 	}
 	return nil
@@ -120,7 +121,7 @@ func CursorLeft(n int) (err error) {
 
 // CursorEraseLine erases the current line.
 func CursorEraseLine() (err error) {
-	if _, err = Output.WriteString(CursorEraseLineSeq); err != nil {
+	if _, err = Output.Write([]byte(CursorEraseLineSeq)); err != nil {
 		return err
 	}
 	return nil
@@ -128,7 +129,7 @@ func CursorEraseLine() (err error) {
 
 // CursorMove moves the cursor to the y-th row and x-th column.
 func CursorMove(y, x int) (err error) {
-	if _, err = Output.WriteString(CursorMoveSeq + strconv.Itoa(y) + ";" + strconv.Itoa(x) + "H"); err != nil {
+	if _, err = Output.Write([]byte(CursorMoveSeq + strconv.Itoa(y) + ";" + strconv.Itoa(x) + "H")); err != nil {
 		return err
 	}
 	return nil
@@ -136,7 +137,7 @@ func CursorMove(y, x int) (err error) {
 
 // CursorColumn sets the cursor to the x-th column of the current line.
 func CursorColumn(x int) (err error) {
-	if _, err = Output.WriteString(CursorColumnSeq + strconv.Itoa(x)); err != nil {
+	if _, err = Output.Write([]byte(CursorColumnSeq + strconv.Itoa(x))); err != nil {
 		return err
 	}
 	return nil
