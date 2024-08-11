@@ -14,7 +14,6 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 	ReportTimestamp: true,
 })
 
-
 var remappedKeys = map[string]func(){
 	"a": func() {
 		hotkeys.DragMouseLeft(20)
@@ -31,5 +30,6 @@ var remappedKeys = map[string]func(){
 }
 
 func main() {
+	logger.Info("Running 🚀")
 	hotkeys.Start(remappedKeys)
 }

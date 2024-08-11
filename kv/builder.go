@@ -1,16 +1,13 @@
 package kv
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"sync"
-	"time"
 
 	"github.com/emirpasic/gods/maps/hashmap"
 )
 
 const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-var seededRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 // Builder is a builder for KV.
 type Builder struct {
@@ -70,7 +67,7 @@ func New() *Builder {
 func generateRandomString(length int) string {
 	b := make([]byte, length)
 	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
+		b[i] = charset[rand.UintN(uint(len(charset)))]
 	}
 	return string(b)
 }

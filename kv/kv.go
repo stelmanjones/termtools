@@ -349,6 +349,9 @@ func (k *KV) handleGetSize(w http.ResponseWriter, _ *http.Request) {
 
 func (k *KV) handleJSON(w http.ResponseWriter, r *http.Request) {
 	data, err := sjson.NewFromReader(r.Body)
+	if err != nil {
+		logger.Error(err.Error())
+	}
 	inserted := sjson.New()
 	if v, err := data.Map(); err == nil {
 		for key, val := range v {
