@@ -25,9 +25,8 @@ var (
 	isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
 )
 
-// TODO: Use builder pattern for the Spinner struct.
 
-// Spinner represents a thread-safe spinner with customizable options such as character sets, prefix, suffix, and color.
+// Spinner represents a thread-safe spinner (s *Spinner) Set customizable s such as character sets, prefix, suffix, and color.
 type Spinner struct {
 	Writer     io.Writer
 	WriterFile *os.File
@@ -45,91 +44,51 @@ type Spinner struct {
 	Color      color.Color
 }
 
-// New creates a new Spinner with the provided CharSet, delay, and options.
-func New(variant SpinnerVariant, options ...Option) *Spinner {
-	s := &Spinner{
-		mu:         &sync.RWMutex{},
-		variant:    variant,
-		running:    false,
-		CancelKeys: []keys.KeyCode{keys.CtrlC, keys.Escape},
-		Writer:     os.Stdout,
-		stopChan:   make(chan struct{}),
-		// keyChan:    make(chan keys.Key),
-		Color:      color.FgDefault,
-		WriterFile: os.Stdout,
-		Prefix:     "",
-		Suffix:     "",
-		FinalMsg:   "",
-		PreUpdate:  nil,
-		PostUpdate: nil,
-	}
 
-	for _, option := range options {
-		option(s)
-	}
-	return s
-}
 
-// Option is a function that modifies a Spinner.
-type Option func(s *Spinner)
-
-// WithColor returns an Option function that sets the color of the spinner.
-func WithColor(c color.Color) Option {
-	return func(s *Spinner) {
+// SetColor sets the color of the spinner.
+func (s *Spinner)SetColor(c color.Color) {
 		s.Color = c
-	}
 }
 
-// WithPrefix returns an Option function that sets the Prefix field of a Spinner.
-func WithPrefix(p string) Option {
-	return func(s *Spinner) {
+//SetPrefix returns an  function that sets the Prefix field of a Spinner.
+func (s *Spinner) SetPrefix(p string)  {
 		s.Prefix = p
-	}
 }
 
-// WithSuffix returns an Option function that sets the suffix of a Spinner.
-func WithSuffix(sf string) Option {
-	return func(s *Spinner) {
+//SetSuffix returns an  function that sets the suffix of a Spinner.
+func (s *Spinner) SetSuffix(sf string)  {
 		s.Suffix = sf
-	}
 }
 
-// WithFinalMsg returns an Option function that sets the final message of a Spinner.
-func WithFinalMsg(fm string) Option {
-	return func(s *Spinner) {
+//SetFinalMsg returns an  function that sets the final message of a Spinner.
+func (s *Spinner) SetFinalMsg(fm string)  {
 		s.FinalMsg = fm
-	}
 }
 
-// WithWriter takes an io.Writer and sets the spinner output.
-func WithWriter(w io.Writer) Option {
-	return func(s *Spinner) {
+//SetWriter takes an io.Writer and sets the spinner output.
+func (s *Spinner) SetWriter(w io.Writer)  {
 		s.mu.Lock()
 		s.Writer = w
 		s.WriterFile = os.Stdout // emulate previous behavior for terminal check
 		s.mu.Unlock()
-	}
 }
 
-// WithCancelKeys returns an Option function that sets the cancelation keys for the Spinner.
-func WithCancelKeys(keys []keys.KeyCode) Option {
-	return func(s *Spinner) {
+//SetCancelKeys returns an  function that sets the cancelation keys for the Spinner.
+func (s *Spinner) SetCancelKeys(keys []keys.KeyCode)  {
 		s.CancelKeys = keys
-	}
 }
 
 func isTerminal(s *Spinner) bool {
 	return term.IsTerminal(int(s.WriterFile.Fd()))
 }
 
-// WithWriterFile adds the given writer to the spinner.
-func WithWriterFile(f *os.File) Option {
-	return func(s *Spinner) {
+//SetWriterFile adds the given writer to the spinner.
+func (s *Spinner) SetWriterFile(f *os.File)  {
 		s.mu.Lock()
 		s.Writer = f     // io.Writer for actual writing
 		s.WriterFile = f // file used only for terminal check
 		s.mu.Unlock()
-	}
 }
 
 // Start starts the spinner.
@@ -231,7 +190,7 @@ func (s *Spinner) erase() {
 }
 
 func computeNumberOfLinesNeededToPrintString(linePrinted string) int {
-	terminalWidth := math.MaxInt // assume infinity by default to keep behaviour consistent with what we had before
+	terminalWidth := math.MaxInt // assume infinity by default to keep behaviour consistent (s *Spinner) Set what we had before
 	if term.IsTerminal(0) {
 		if width, _, err := term.GetSize(0); err == nil {
 			terminalWidth = width

@@ -2,12 +2,55 @@ package text
 
 import (
 	"fmt"
+	"iter"
 	"strings"
 
-	"github.com/mattn/go-runewidth"
-
 	"github.com/gookit/color"
+	"github.com/mattn/go-runewidth"
 )
+
+type Line struct {
+	index int
+	value string
+}
+
+func (l *Line) Value() string {
+	return l.value
+}
+
+func (l *Line) Set(s string) {
+	l.value = s
+}
+func (l *Line) Index() int {
+	return l.index
+}
+
+func (l *Line) Runes() []rune {
+	return []rune(l.value)
+}
+
+func (l *Line) Bytes() []byte {
+	return []byte(l.value)
+}
+
+func Lines(s string) iter.Seq[*Line] {
+	lines := strings.Split(string(s), "\n")
+	return func(yield func(*Line) bool) {
+		for i, l := range lines {
+			if !yield(&Line{i, l}) {
+				return
+			}
+		}
+	}
+}
+
+func MapLines(s string, fn func(*Line) *Line) (lines []*Line) {
+	for line := range Lines(s) {
+		lines = append(lines, fn(line))
+	}
+	return lines
+
+}
 
 // VisibleLength returns the length of the string as seen by a human.
 // It removes all ANSI sequences from the string.

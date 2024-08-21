@@ -12,7 +12,7 @@ replace github.com/stelmanjones/termtools/spin => ./spin
 
 replace github.com/stelmanjones/termtools/hotkeys => ./hotkeys
 
-go 1.22.6
+go 1.23.0
 
 require (
 	github.com/charmbracelet/log v0.4.0

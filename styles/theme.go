@@ -33,4 +33,3 @@ var (
 	NonSelectedOption = s.Faint()
 	Warning           = s.Bold().Foreground(yellow)
 )
-

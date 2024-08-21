@@ -7,7 +7,7 @@ import (
 	"atomicgo.dev/keyboard/keys"
 	"github.com/charmbracelet/log"
 	"github.com/muesli/termenv"
-	"github.com/stelmanjones/termtools/styles"
+	"github.com/stelmanjones/termtools/internal/theme"
 )
 
 // ConfirmationPrompt is a prompt that asks the user to confirm a certain action.
@@ -18,13 +18,11 @@ type ConfirmationPrompt struct {
 // NewConfirmationPrompt creates a new ConfirmationPrompt with the specified label.
 func NewConfirmationPrompt(label string) *ConfirmationPrompt {
 	p := &ConfirmationPrompt{
-
 		Base: Base[string]{
 			label: label,
 		},
 	}
 	return p
-
 }
 
 // SetLabel sets the label for the ConfirmationPrompt.
@@ -36,7 +34,7 @@ func (p *ConfirmationPrompt) SetLabel(label string) *ConfirmationPrompt {
 func (p *ConfirmationPrompt) render(out *termenv.Output) {
 	if p.label != "" {
 
-		_, err := out.WriteString(p.label + styles.Dimmed.Styled(" (y/n)"))
+		_, err := out.WriteString(p.label + theme.Dimmed.Render(" (y/n)"))
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -102,5 +100,4 @@ outer:
 	out.MoveCursor(0, 0)
 
 	return result, nil
-
 }

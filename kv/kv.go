@@ -13,8 +13,8 @@ import (
 	"github.com/emirpasic/gods/maps/hashmap"
 	"github.com/gookit/color"
 	"github.com/gorilla/mux"
+	"github.com/stelmanjones/termtools/internal/theme"
 	"github.com/stelmanjones/termtools/kv/errors"
-	"github.com/stelmanjones/termtools/styles"
 )
 
 // Option defines a function signature for options used to configure a KV instance.
@@ -91,14 +91,14 @@ func (k *KV) Data() *hashmap.Map {
 // Set stores a value associated with a key in the KV store.
 func (k *KV) Set(key string, value interface{}) error {
 	if k.limit > 0 && k.data.Size() >= k.limit {
-		logger.Warn(styles.Warning.Styled("TABLE FULL"))
+		logger.Warn(theme.Warning.Render("TABLE FULL"))
 		return errors.ErrTableFull
 	}
 	k.mux.Lock()
 	defer k.mux.Unlock()
 	if !k.Has(key) {
 		k.data.Put(key, value)
-		logger.Debug(styles.Warning.Styled("SET"), key, value)
+		logger.Debug(theme.Warning.Render("SET"), key, value)
 		return nil
 	}
 	logger.Error("Key '%v' already exists.", key)
@@ -115,12 +115,12 @@ func (k *KV) SetMany(keyvals ...interface{}) error {
 	for i := 0; i < len(keyvals); i += 2 {
 
 		if k.limit > 0 && k.data.Size() >= k.limit {
-			logger.Warn(styles.Warning.Styled("TABLE FULL"))
+			logger.Warn(theme.Warning.Render("TABLE FULL"))
 			return errors.ErrTableFull
 		}
 		if !k.Has(keyvals[i].(string)) {
 			k.data.Put(keyvals[i].(string), keyvals[i+1])
-			logger.Debug(styles.Warning.Styled("SET"), keyvals[i].(string), keyvals[i+1])
+			logger.Debug(theme.Warning.Render("SET"), keyvals[i].(string), keyvals[i+1])
 		}
 		logger.Error("Key '%v' already exists.", keyvals[i].(string))
 		return errors.ErrKeyExists
@@ -136,7 +136,7 @@ func (k *KV) Update(key string, value interface{}) error {
 		return errors.ErrKeyNotFound
 	}
 	k.data.Put(key, value)
-	logger.Debug(styles.AccentBlue.Styled("UPDATED"), key, value)
+	logger.Debug(theme.AccentBlue.Render("UPDATED"), key, value)
 	return nil
 }
 
@@ -151,7 +151,7 @@ func (k *KV) UpdateMany(keyvals ...interface{}) error {
 			return errors.ErrKeyNotFound
 		}
 		k.data.Put(keyvals[i].(string), keyvals[i+1])
-		logger.Debug(styles.AccentBlue.Styled("UPDATED"), keyvals[i].(string), keyvals[i+1])
+		logger.Debug(theme.AccentBlue.Render("UPDATED"), keyvals[i].(string), keyvals[i+1])
 	}
 	return nil
 }
@@ -161,7 +161,7 @@ func (k *KV) Get(key string) (interface{}, error) {
 	k.mux.RLock()
 	defer k.mux.RUnlock()
 	if value, found := k.data.Get(key); found {
-		logger.Debug(styles.AccentGreen.Styled("GET"), key, value)
+		logger.Debug(theme.AccentGreen.Render("GET"), key, value)
 		return value, nil
 	}
 	return nil, errors.ErrKeyNotFound
@@ -177,7 +177,7 @@ func (k *KV) GetMany(keys ...string) ([]interface{}, error) {
 			res = append(res, value)
 		}
 	}
-	logger.Debug(styles.AccentGreen.Styled("GET"), "result", res)
+	logger.Debug(theme.AccentGreen.Render("GET"), "result", res)
 	return res, nil
 }
 
@@ -194,7 +194,7 @@ func (k *KV) Remove(key string) error {
 	k.mux.Lock()
 	defer k.mux.Unlock()
 	k.data.Remove(key)
-	logger.Debug(styles.AccentRed.Styled("DELETE"), key)
+	logger.Debug(theme.AccentRed.Render("DELETE"), key)
 	return nil
 }
 
@@ -478,7 +478,7 @@ func (k *KV) Serve(port int) error {
 	r.HandleFunc("/adm/kv", k.handleClearKv).Methods("DELETE")
 	r.HandleFunc("/adm/size", k.handleGetSize).Methods("GET")
 	r.Use(k.AuthMiddleware(r))
-	fmt.Printf("%s\n\n", styles.Accent.Styled(banner))
+	fmt.Printf("%s\n\n", theme.Accent.Render(banner))
 	logger.Debug("Server started 🎉", "address", k.address, "port", port, "auth", k.auth)
 	logger.Fatal(http.ListenAndServe(strings.Join([]string{k.address, strconv.Itoa(port)}, ":"), r))
 

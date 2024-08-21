@@ -1,6 +1,6 @@
 module github.com/stelmanjones/termtools/hotkeys
 
-go 1.22.6
+go 1.23.0
 
 require github.com/charmbracelet/log v0.4.0
 

@@ -6,7 +6,7 @@ import (
 
 	"atomicgo.dev/keyboard/keys"
 	"github.com/muesli/termenv"
-	"github.com/stelmanjones/termtools/styles"
+	"github.com/stelmanjones/termtools/internal/theme"
 	"github.com/stelmanjones/termtools/usure"
 )
 
@@ -26,7 +26,7 @@ func NewSelectionPrompt[T Value](choices ...T) *SelectionPrompt[T] {
 	p := &SelectionPrompt[T]{
 		Base: Base[T]{
 			label:    "",
-			selector: styles.Selector,
+			selector: theme.Selector,
 		},
 		Choices: make([]T, 0),
 		index:   0,
@@ -86,26 +86,26 @@ func (p *SelectionPrompt[T]) render(out *termenv.Output) {
 	var sb strings.Builder
 	if p.label != "" {
 
-		_, err := sb.WriteString(styles.Title.Styled(" " + p.label + " " + "\n\n"))
+		_, err := sb.WriteString(theme.Title.Render(" " + p.label + " " + "\n\n"))
 		if err != nil {
 			fmt.Println(err)
 		}
 	}
 	for i, option := range p.Choices {
 		if i == p.index {
-			_, err := sb.WriteString(p.selector + styles.SelectedOption.Styled(fmt.Sprintf("  %v\n", option)))
+			_, err := sb.WriteString(p.selector + theme.SelectedOption.Render(fmt.Sprintf("  %v\n", option)))
 			if err != nil {
 				fmt.Println(err)
 			}
 		} else {
-			_, err := sb.WriteString(styles.NonSelectedOption.Styled(fmt.Sprintf("   %v\n", option)))
+			_, err := sb.WriteString(theme.NonSelectedOption.Render(fmt.Sprintf("   %v\n", option)))
 			if err != nil {
 				fmt.Println(err)
 			}
 		}
 	}
 
-	_, err := sb.WriteString(styles.Dimmed.Styled(footer))
+	_, err := sb.WriteString(theme.Dimmed.Render(footer))
 	if err != nil {
 		fmt.Println(err)
 	}

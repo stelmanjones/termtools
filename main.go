@@ -6,7 +6,9 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/stelmanjones/termtools/hotkeys"
+	"github.com/stelmanjones/termtools/text"
 )
+import "fmt"
 
 var logger = log.NewWithOptions(os.Stderr, log.Options{
 	Level:           log.DebugLevel,
@@ -30,6 +32,13 @@ var remappedKeys = map[string]func(){
 }
 
 func main() {
-	logger.Info("Running 🚀")
-	hotkeys.Start(remappedKeys)
+	//	logger.Info("Running 🚀")
+	// hotkeys.Start(remappedKeys)
+	s := "Line1\nLine2\nLine3"
+	for line := range text.Lines(s) {
+		log.Info("Line ->", "data", line, "index", line.Index(), "value", line.Value(), "runes", line.Runes(), "bytes", line.Bytes())
+		line.Set(fmt.Sprintf("%s%s", line.Value(), " changed"))
+		log.Info("Line ->", "data", line, "index", line.Index(), "value", line.Value(), "runes", line.Runes(), "bytes", line.Bytes())
+
+	}
 }
