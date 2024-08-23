@@ -25,7 +25,6 @@ var (
 	isWindowsTerminalOnWindows = len(os.Getenv("WT_SESSION")) > 0 && isWindows
 )
 
-
 // Spinner represents a thread-safe spinner (s *Spinner) Set customizable s such as character sets, prefix, suffix, and color.
 type Spinner struct {
 	Writer     io.Writer
@@ -44,51 +43,49 @@ type Spinner struct {
 	Color      color.Color
 }
 
-
-
 // SetColor sets the color of the spinner.
-func (s *Spinner)SetColor(c color.Color) {
-		s.Color = c
+func (s *Spinner) SetColor(c color.Color) {
+	s.Color = c
 }
 
-//SetPrefix returns an  function that sets the Prefix field of a Spinner.
-func (s *Spinner) SetPrefix(p string)  {
-		s.Prefix = p
+// SetPrefix returns an  function that sets the Prefix field of a Spinner.
+func (s *Spinner) SetPrefix(p string) {
+	s.Prefix = p
 }
 
-//SetSuffix returns an  function that sets the suffix of a Spinner.
-func (s *Spinner) SetSuffix(sf string)  {
-		s.Suffix = sf
+// SetSuffix returns an  function that sets the suffix of a Spinner.
+func (s *Spinner) SetSuffix(sf string) {
+	s.Suffix = sf
 }
 
-//SetFinalMsg returns an  function that sets the final message of a Spinner.
-func (s *Spinner) SetFinalMsg(fm string)  {
-		s.FinalMsg = fm
+// SetFinalMsg returns an  function that sets the final message of a Spinner.
+func (s *Spinner) SetFinalMsg(fm string) {
+	s.FinalMsg = fm
 }
 
-//SetWriter takes an io.Writer and sets the spinner output.
-func (s *Spinner) SetWriter(w io.Writer)  {
-		s.mu.Lock()
-		s.Writer = w
-		s.WriterFile = os.Stdout // emulate previous behavior for terminal check
-		s.mu.Unlock()
+// SetWriter takes an io.Writer and sets the spinner output.
+func (s *Spinner) SetWriter(w io.Writer) {
+	s.mu.Lock()
+	s.Writer = w
+	s.WriterFile = os.Stdout // emulate previous behavior for terminal check
+	s.mu.Unlock()
 }
 
-//SetCancelKeys returns an  function that sets the cancelation keys for the Spinner.
-func (s *Spinner) SetCancelKeys(keys []keys.KeyCode)  {
-		s.CancelKeys = keys
+// SetCancelKeys returns an  function that sets the cancelation keys for the Spinner.
+func (s *Spinner) SetCancelKeys(keys []keys.KeyCode) {
+	s.CancelKeys = keys
 }
 
 func isTerminal(s *Spinner) bool {
 	return term.IsTerminal(int(s.WriterFile.Fd()))
 }
 
-//SetWriterFile adds the given writer to the spinner.
-func (s *Spinner) SetWriterFile(f *os.File)  {
-		s.mu.Lock()
-		s.Writer = f     // io.Writer for actual writing
-		s.WriterFile = f // file used only for terminal check
-		s.mu.Unlock()
+// SetWriterFile adds the given writer to the spinner.
+func (s *Spinner) SetWriterFile(f *os.File) {
+	s.mu.Lock()
+	s.Writer = f     // io.Writer for actual writing
+	s.WriterFile = f // file used only for terminal check
+	s.mu.Unlock()
 }
 
 // Start starts the spinner.
@@ -116,7 +113,7 @@ func (s *Spinner) Start() {
 
 	go func() {
 		for {
-			for i := 0; i < len(s.variant.chars)-1; i++ {
+			for c := range s.variant.All() {
 				select {
 				case <-s.stopChan:
 					s.mu.Lock()
@@ -126,7 +123,7 @@ func (s *Spinner) Start() {
 					os.Exit(0)
 				default:
 					s.mu.RLock()
-					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", s.variant.chars[i]), s.Suffix)
+					out := fmt.Sprintf("\r%s%s%s", s.Prefix, s.Color.Sprintf("%s", c), s.Suffix)
 					fmt.Fprint(s.Writer, out)
 					delay := s.variant.Interval
 					s.mu.RUnlock()

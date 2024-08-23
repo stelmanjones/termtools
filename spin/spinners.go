@@ -1,6 +1,8 @@
 package spin
 
-//TODO: Change charset type to []rune
+import "iter"
+
+// TODO: Change charset type to []rune
 
 // CharSet is a type alias for a slice of strings.
 type CharSet = []string
@@ -9,6 +11,16 @@ type CharSet = []string
 type SpinnerVariant struct {
 	chars    CharSet
 	Interval int
+}
+
+func (v *SpinnerVariant) All() iter.Seq[string] {
+	return func(yield func(string) bool) {
+		for _, c := range v.chars {
+			if !yield(c) {
+				return
+			}
+		}
+	}
 }
 
 // NewSpinnerVariant creates a new SpinnerVariant with the given character set and interval.

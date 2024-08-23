@@ -4,11 +4,14 @@ import (
 	"C"
 	"os"
 
+	"time"
+
 	"github.com/charmbracelet/log"
 	"github.com/stelmanjones/termtools/hotkeys"
-	"github.com/stelmanjones/termtools/text"
+
+	"github.com/gookit/color"
+	"github.com/stelmanjones/termtools/spin"
 )
-import "fmt"
 
 var logger = log.NewWithOptions(os.Stderr, log.Options{
 	Level:           log.DebugLevel,
@@ -34,11 +37,23 @@ var remappedKeys = map[string]func(){
 func main() {
 	//	logger.Info("Running 🚀")
 	// hotkeys.Start(remappedKeys)
-	s := "Line1\nLine2\nLine3"
-	for line := range text.Lines(s) {
-		log.Info("Line ->", "data", line, "index", line.Index(), "value", line.Value(), "runes", line.Runes(), "bytes", line.Bytes())
-		line.Set(fmt.Sprintf("%s%s", line.Value(), " changed"))
-		log.Info("Line ->", "data", line, "index", line.Index(), "value", line.Value(), "runes", line.Runes(), "bytes", line.Bytes())
+	/*
+		s := "Line1\nLine2\nLine3"
+		for line := range text.Lines(s) {
+			log.Info("Line ->", "data", line, "index", line.Index(), "value", line.Value(), "runes", line.Runes(), "bytes", line.Bytes())
+			line.Set(fmt.Sprintf("%s%s", line.Value(), " changed"))
+			log.Info("Line ->", "data", line, "index", line.Index(), "value", line.Value(), "runes", line.Runes(), "bytes", line.Bytes())
 
-	}
+		}
+	*/
+	s := spin.New().
+		WithPrefix("SPINNING ").
+		WithColor(color.FgGreen).
+		WithFinalMsg("BYE!").
+		Build()
+
+	s.Start()
+
+	time.Sleep(time.Second * 3)
+	s.Stop()
 }

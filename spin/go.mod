@@ -1,6 +1,6 @@
 module github.com/stelmanjones/termtools/spin
 
-go 1.22.1
+go 1.23.0
 
 require (
 	atomicgo.dev/cursor v0.2.0

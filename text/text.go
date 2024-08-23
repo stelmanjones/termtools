@@ -10,6 +10,7 @@ import (
 )
 
 type Line struct {
+	//TODO: Remove index.
 	index int
 	value string
 }
@@ -33,6 +34,7 @@ func (l *Line) Bytes() []byte {
 	return []byte(l.value)
 }
 
+// TODO: Change to iter.Seq2[int,*Line].
 func Lines(s string) iter.Seq[*Line] {
 	lines := strings.Split(string(s), "\n")
 	return func(yield func(*Line) bool) {
