@@ -10,6 +10,10 @@ replace github.com/stelmanjones/termtools/spin => ./spin
 
 replace github.com/stelmanjones/termtools/hotkeys => ./hotkeys
 
+replace github.com/stelmanjones/termtools/text => ./text
+
+replace github.com/stelmanjones/termtools/tty => ./tty
+
 go 1.23.0
 
 require (
@@ -20,9 +24,11 @@ require (
 	github.com/stelmanjones/termtools/usure v0.0.0-20240421154834-24bb8b0366d8
 )
 
+require github.com/stelmanjones/termtools/text v0.0.0-20240810205715-64ac7a9ad647 // indirect
+
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
-	atomicgo.dev/keyboard v0.2.9 // indirect
+	atomicgo.dev/keyboard v0.2.9
 	github.com/containerd/console v1.0.4 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/gen2brain/shm v0.0.0-20230802011745-f2460f5984f7 // indirect
@@ -39,7 +45,6 @@ require (
 	github.com/robotn/xgbutil v0.0.0-20190912154524-c861d6f87770 // indirect
 	github.com/shirou/gopsutil/v3 v3.23.8 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
-	github.com/stelmanjones/termtools/styles v0.0.0-20240421154834-24bb8b0366d8 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/vcaesar/gops v0.30.2 // indirect
@@ -55,13 +60,13 @@ require (
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bitly/go-simplejson v0.5.1 // indirect
-	github.com/charmbracelet/lipgloss v0.10.0 // indirect
+	github.com/charmbracelet/lipgloss v0.10.0
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
 	github.com/gookit/color v1.5.4
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect

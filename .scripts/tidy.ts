@@ -1,4 +1,6 @@
 import chalk from 'chalk'
+import { $ } from "bun";
+
 async function tidyModules() {
     const modules = await Bun.$`go list -m`.lines()
 
@@ -15,16 +17,17 @@ async function tidyModules() {
 
 
 
-
     for (const name of names) {
-        Bun.$.cwd(`./${name}`)
-        Bun.$`go mod tidy`
-        Bun.$.cwd("..")
+        $.cwd(`./${name}`)
+        const out = await $`go mod tidy`.nothrow().text()
+        $.cwd("..")
+        console.log(out)
         console.log(`Tidied up module ${chalk.green(name)}`)
     }
 
 }
 
+$.cwd("/Users/stelmanjones/Repositories/Go/termtools")
 
 await tidyModules()
 

@@ -15,25 +15,32 @@ var (
 	codeRegex  = regexp.MustCompile(codeExpr)
 )
 
+// Line is a single line of text.
 type Line struct {
 	value string
 }
 
+// Value returns the inner value of the line as a string.
 func (l *Line) Value() string {
 	return l.value
 }
 
+// Set sets the line to the given string.
 func (l *Line) Set(s string) {
 	l.value = s
 }
+
+// Runes returns the line as a slice of runes.
 func (l *Line) Runes() []rune {
 	return []rune(l.value)
 }
 
+// Bytes returns the line as a byte slice.
 func (l *Line) Bytes() []byte {
 	return []byte(l.value)
 }
 
+// Lines returns an iterator over the lines of the string.
 func Lines(s string) iter.Seq2[int, *Line] {
 	lines := strings.Split(s, "\n")
 	return func(yield func(int, *Line) bool) {
@@ -45,6 +52,7 @@ func Lines(s string) iter.Seq2[int, *Line] {
 	}
 }
 
+// MapLines runs the function fn on every line of the string.
 func MapLines(s string, fn func(*Line) *Line) (lines []*Line) {
 	for _, line := range Lines(s) {
 		lines = append(lines, fn(line))

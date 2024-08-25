@@ -18,6 +18,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/gookit/color"
+	"github.com/stelmanjones/termtools/text"
 )
 
 var (
@@ -207,28 +208,13 @@ func isAnsiTerminator(r rune) bool {
 }
 
 // computeLineWidth returns the displayed width of a line
-func computeLineWidth(line string) int {
-	width := 0
-	ansi := false
-
-	for _, r := range line {
-		// increase width only when outside of ANSI escape sequences
-		if ansi || isAnsiMarker(r) {
-			ansi = !isAnsiTerminator(r)
-		} else {
-			width += utf8.RuneLen(r)
-		}
-	}
-
-	return width
-}
 
 func computeNumberOfLinesNeededToPrintStringInternal(linePrinted string, maxLineWidth int) int {
 	lineCount := 0
 	for _, line := range strings.Split(linePrinted, "\n") {
 		lineCount++
 
-		lineWidth := computeLineWidth(line)
+		lineWidth := text.VisibleLength(line)
 		if lineWidth > maxLineWidth {
 			lineCount += int(float64(lineWidth) / float64(maxLineWidth))
 		}
