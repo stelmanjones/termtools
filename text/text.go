@@ -162,6 +162,7 @@ func LineCount(s ...interface{}) int {
 	return len(SplitLines(s...))
 }
 
+// ClearCode returns the input string without any ANSI escapes.
 func ClearCode(str string) string {
 	if !strings.Contains(str, codeSuffix) {
 		return str
