@@ -4,8 +4,6 @@ replace github.com/stelmanjones/termtools/kv => ./kv
 
 replace github.com/stelmanjones/termtools/prompt => ./prompt
 
-replace github.com/stelmanjones/termtools/styles => ./styles
-
 replace github.com/stelmanjones/termtools/usure => ./usure
 
 replace github.com/stelmanjones/termtools/spin => ./spin

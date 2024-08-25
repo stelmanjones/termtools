@@ -3,15 +3,19 @@ package text
 import (
 	"fmt"
 	"iter"
+	"regexp"
 	"strings"
 
-	"github.com/gookit/color"
 	"github.com/mattn/go-runewidth"
 )
 
+var (
+	codeExpr   = `\033\[[\d;?]+m`
+	codeSuffix = "[0m"
+	codeRegex  = regexp.MustCompile(codeExpr)
+)
+
 type Line struct {
-	//TODO: Remove index.
-	index int
 	value string
 }
 
@@ -22,10 +26,6 @@ func (l *Line) Value() string {
 func (l *Line) Set(s string) {
 	l.value = s
 }
-func (l *Line) Index() int {
-	return l.index
-}
-
 func (l *Line) Runes() []rune {
 	return []rune(l.value)
 }
@@ -34,12 +34,11 @@ func (l *Line) Bytes() []byte {
 	return []byte(l.value)
 }
 
-// TODO: Change to iter.Seq2[int,*Line].
-func Lines(s string) iter.Seq[*Line] {
-	lines := strings.Split(string(s), "\n")
-	return func(yield func(*Line) bool) {
+func Lines(s string) iter.Seq2[int, *Line] {
+	lines := strings.Split(s, "\n")
+	return func(yield func(int, *Line) bool) {
 		for i, l := range lines {
-			if !yield(&Line{i, l}) {
+			if !yield(i, &Line{l}) {
 				return
 			}
 		}
@@ -47,7 +46,7 @@ func Lines(s string) iter.Seq[*Line] {
 }
 
 func MapLines(s string, fn func(*Line) *Line) (lines []*Line) {
-	for line := range Lines(s) {
+	for _, line := range Lines(s) {
 		lines = append(lines, fn(line))
 	}
 	return lines
@@ -57,12 +56,7 @@ func MapLines(s string, fn func(*Line) *Line) (lines []*Line) {
 // VisibleLength returns the length of the string as seen by a human.
 // It removes all ANSI sequences from the string.
 func VisibleLength(s ...interface{}) int {
-	return runewidth.StringWidth(stripSequences(s...))
-}
-
-// stripSequences removes all ANSI sequences from the string.
-func stripSequences(a ...interface{}) string {
-	return color.ClearCode(fmt.Sprint(a...))
+	return runewidth.StringWidth(ClearCode(fmt.Sprint(s...)))
 }
 
 // mapLines runs function fn on every line of the string.
@@ -166,4 +160,11 @@ func SplitLines(s ...interface{}) []string {
 // LineCount returns the number of lines in the string.
 func LineCount(s ...interface{}) int {
 	return len(SplitLines(s...))
+}
+
+func ClearCode(str string) string {
+	if !strings.Contains(str, codeSuffix) {
+		return str
+	}
+	return codeRegex.ReplaceAllString(str, "")
 }
