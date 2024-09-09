@@ -9,11 +9,10 @@ import (
 )
 
 import (
-	"fmt"
 	"image"
 	"image/png"
 
-	"github.com/stelmanjones/termtools/screencap"
+	"github.com/stelmanjones/termtools/boxes"
 )
 
 var logger = log.NewWithOptions(os.Stderr, log.Options{
@@ -49,31 +48,6 @@ func save(img *image.RGBA, filePath string) {
 	}
 }
 
-func capture() {
-	n := screencap.NumActiveDisplays()
-	if n == 0 {
-		panic("Active display not found")
-	}
-
-	all := image.Rect(0, 0, 0, 0)
-	for i := 0; i < n; i++ {
-		bounds := screencap.GetDisplayBounds(i)
-		all = bounds.Union(all)
-
-		img, err := screencap.CaptureRect(bounds)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("%v\n", all)
-		img, err = screencap.Capture(all.Min.X, all.Min.Y, all.Dx(), all.Dy())
-		if err != nil {
-			panic(err)
-		}
-		save(img, "all.png")
-	}
-}
-
 func main() {
 	//	logger.Info("Running 🚀")
 	// hotkeys.Start(remappedKeys)
@@ -99,5 +73,12 @@ func main() {
 		s.Stop()
 	*/
 
-	capture()
+	s := `Assure polite his really and others figure though. Day age advantages end sufficient eat expression travelling. Of on am father by agreed supply rather either. Own handsome delicate its property mistress her end appetite. Mean are sons too sold nor said. Son share three men power boy you. Now merits wonder effect garret own. Admiration stimulated cultivated reasonable be projection possession of. Real no near room ye bred sake if some. Is arranging furnished knowledge agreeable so. Fanny as smile up small. It vulgar chatty simple months turned oh at change of. Astonished set expression solicitude way admiration.
+Preserved defective offending he daughters on or. Rejoiced prospect yet material servants out answered men admitted. Sportsmen certainty prevailed suspected am as. Add stairs admire all answer the nearer yet length. Advantages prosperous remarkably my inhabiting so reasonably be if. Too any appearance announcing impossible one. Out mrs means heart ham tears shall power every.
+Promotion an ourselves up otherwise my. High what each snug rich far yet easy. In companions inhabiting mr principles at insensible do. Heard their sex hoped enjoy vexed child for. Prosperous so occasional assistance it discovered especially no. Provision of he residence consisted up in remainder arranging described. Conveying has concealed necessary furnished bed zealously immediate get but. Terminated as middletons or by instrument. Bred do four so your felt with. No shameless principle dependent household do.
+`
+
+	log.Info(s)
+	log.Warn("-----------------------")
+	log.Info(boxes.RoundedBox.Sprint(s))
 }

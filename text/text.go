@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"iter"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/mattn/go-runewidth"
@@ -41,6 +42,8 @@ func (l *Line) Bytes() []byte {
 }
 
 // Lines returns an iterator over the lines of the string.
+// It returns a single-use iterator.
+
 func Lines(s string) iter.Seq2[int, *Line] {
 	lines := strings.Split(s, "\n")
 	return func(yield func(int, *Line) bool) {
@@ -50,6 +53,15 @@ func Lines(s string) iter.Seq2[int, *Line] {
 			}
 		}
 	}
+}
+
+func JoinLines(lines []*Line) string {
+	var sb strings.Builder
+
+	for _, line := range lines {
+		sb.WriteString(line.Value() + "\n")
+	}
+	return sb.String()
 }
 
 // MapLines runs the function fn on every line of the string.
@@ -176,4 +188,14 @@ func ClearCode(str string) string {
 		return str
 	}
 	return codeRegex.ReplaceAllString(str, "")
+}
+
+func Chunks(s string, length int) (res []string) {
+
+	chunked := slices.Chunk([]rune(s), length)
+	for chunk := range chunked {
+		res = append(res, string(chunk)+"\n")
+	}
+
+	return res
 }
