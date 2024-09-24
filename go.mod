@@ -24,7 +24,10 @@ require (
 	github.com/stelmanjones/termtools/usure v0.0.0-20240421154834-24bb8b0366d8
 )
 
-require github.com/stelmanjones/termtools/text v0.0.0-20240810205715-64ac7a9ad647 // indirect
+require (
+	github.com/stelmanjones/termtools/text v0.0.0-20240810205715-64ac7a9ad647 // indirect
+	golang.org/x/net v0.24.0 // indirect
+)
 
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
@@ -35,7 +38,6 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-vgo/robotgo v0.110.1 // indirect
 	github.com/jezek/xgb v1.1.0 // indirect
-	github.com/kbinani/screenshot v0.0.0-20230812210009-b87d31814237 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e // indirect
 	github.com/otiai10/gosseract v2.2.1+incompatible // indirect

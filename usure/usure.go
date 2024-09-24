@@ -1,4 +1,3 @@
-
 // Package usure provides a few assertions.
 package usure
 
@@ -8,6 +7,14 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/gookit/color"
 )
+
+func Assert(comparison func() (success bool), msg string) bool {
+	result := comparison()
+	if !result {
+		panic("[assertion error] " + msg)
+	}
+	return result
+}
 
 // Nil checks if a is nil.
 func Nil(a any) bool {

@@ -190,6 +190,7 @@ func ClearCode(str string) string {
 	return codeRegex.ReplaceAllString(str, "")
 }
 
+// Chunks splits the string into chunks of the given length.
 func Chunks(s string, length int) (res []string) {
 
 	chunked := slices.Chunk([]rune(s), length)
@@ -198,4 +199,14 @@ func Chunks(s string, length int) (res []string) {
 	}
 
 	return res
+}
+
+// OddLength returns true if the length of the string is odd.
+func OddLength(s ...interface{}) bool {
+	return len(fmt.Sprint(s...))%2 != 0
+}
+
+// OddVisibleLength returns true if the visible length of the string is odd.
+func OddVisibleLength(s ...interface{}) bool {
+	return VisibleLength(s...)%2 != 0
 }

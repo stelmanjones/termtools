@@ -20,12 +20,12 @@ var (
 
 type Progress struct {
 	Out         io.Writer
-	Bars        []*Bar
-	RefreshRate time.Duration
-	Width       int
-	live        *uilive.Writer
 	mtx         *sync.RWMutex
 	done        chan bool
+	live        *uilive.Writer
+	Bars        []*Bar
+	Width       int
+	RefreshRate time.Duration
 	current     int
 	total       int
 	elapsed     time.Duration

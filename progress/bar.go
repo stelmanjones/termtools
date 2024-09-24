@@ -18,22 +18,21 @@ var (
 )
 
 type Bar struct {
-	total       int
-	current     int
-	elapsed     time.Duration
 	TimeStarted time.Time
 	mtx         *sync.RWMutex
-	showSteps   bool
+	MarginLeft  int
+	current     int
+	elapsed     time.Duration
+	Width       int
+	total       int
+	MarginRight int
 	showPercent bool
-	showElapsed bool
-
-	Head        byte
 	Bar         byte
 	Empty       byte
 	Delimiter   byte
-	MarginLeft  int
-	MarginRight int
-	Width       int
+	Head        byte
+	showElapsed bool
+	showSteps   bool
 }
 
 func NewBar(total int) *Bar {
@@ -101,7 +100,7 @@ func (b *Bar) Incr() bool {
 	}
 
 	var t time.Time
-	if b.TimeStarted.IsZero() || b.TimeStarted == t {
+	if b.TimeStarted.IsZero() || b.TimeStarted.Equal(t) {
 		b.TimeStarted = time.Now()
 	}
 
