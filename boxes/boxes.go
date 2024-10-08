@@ -110,11 +110,11 @@ func (b *Box) buildHeader() string {
 		oddPadding = " "
 	}
 	titleWidth := text.VisibleLength(b.title)
+	padding := strings.Repeat(b.Border.Horizontal, (b.Width-2-titleWidth)/2)
+	sb.Grow(titleWidth + 4 + (b.Width - 2 - titleWidth) + len(oddPadding))
+
 	sb.WriteString("\n" + b.Border.TopLeft)
-	sb.WriteString(strings.Repeat(b.Border.Horizontal, (b.Width-2-titleWidth)/2))
-	sb.WriteString(b.title)
-	sb.WriteString(strings.Repeat(b.Border.Horizontal, (b.Width-2-titleWidth)/2))
-	sb.WriteString(oddPadding)
+	sb.WriteString(padding + b.title + padding + oddPadding)
 	sb.WriteString(b.Border.TopRight)
 	return sb.String()
 }
@@ -138,9 +138,7 @@ func (b *Box) Sprint(s ...string) string {
 	sb.WriteString(b.buildHeader() + "\n")
 
 	// Top Padding
-	for range b.Padding.Top {
-		sb.WriteString(emptyLine + "\n")
-	}
+	sb.WriteString(strings.Repeat(emptyLine+"\n", b.Padding.Top))
 
 	// Content
 	constrainedText := strings.Join(text.Chunks(strings.Join(s, ""), usableWidth), "")

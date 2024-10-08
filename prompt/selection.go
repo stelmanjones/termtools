@@ -10,8 +10,6 @@ import (
 	"github.com/stelmanjones/termtools/usure"
 )
 
-var footer = "\n ↓/↑, tab/S-tab, j/k: down/up • enter: select\n"
-
 // SelectionPrompt represents a prompt that allows the user to select from a list of choices.
 type SelectionPrompt[T Value] struct {
 	Base[T]             // The base prompt that the selection prompt inherits from.
@@ -105,7 +103,7 @@ func (p *SelectionPrompt[T]) render(out *termenv.Output) {
 		}
 	}
 
-	_, err := sb.WriteString(theme.Dimmed.Render(footer))
+	_, err := sb.WriteString(theme.SelectionPromptControls)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -70,7 +70,6 @@ func MapLines(s string, fn func(*Line) *Line) (lines []*Line) {
 		lines = append(lines, fn(line))
 	}
 	return lines
-
 }
 
 // VisibleLength returns the length of the string as seen by a human.
@@ -192,7 +191,6 @@ func ClearCode(str string) string {
 
 // Chunks splits the string into chunks of the given length.
 func Chunks(s string, length int) (res []string) {
-
 	chunked := slices.Chunk([]rune(s), length)
 	for chunk := range chunked {
 		res = append(res, string(chunk)+"\n")

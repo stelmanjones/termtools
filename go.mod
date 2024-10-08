@@ -8,6 +8,8 @@ replace github.com/stelmanjones/termtools/usure => ./usure
 
 replace github.com/stelmanjones/termtools/spin => ./spin
 
+replace github.com/stelmanjones/termtools/boxes => ./boxes
+
 replace github.com/stelmanjones/termtools/hotkeys => ./hotkeys
 
 replace github.com/stelmanjones/termtools/text => ./text
@@ -72,7 +74,9 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
+	github.com/stelmanjones/termtools/boxes v0.0.0-00010101000000-000000000000
 	github.com/stelmanjones/termtools/hotkeys v0.0.0-00010101000000-000000000000
+	github.com/stelmanjones/termtools/tty v0.0.0-00010101000000-000000000000
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/exp v0.0.0-20240416160154-fe59bbe5cc7f // indirect
 	golang.org/x/sys v0.19.0 // indirect

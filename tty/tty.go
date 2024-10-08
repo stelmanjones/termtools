@@ -17,16 +17,18 @@ const (
 
 // Cursor
 const (
-	CursorHomeSeq      = "\x1b[H"
-	CursorUpSeq        = "\x1b[A"
-	CursorDownSeq      = "\x1b[B"
-	CursorRightSeq     = "\x1b[C"
-	CursorLeftSeq      = "\x1b[D"
-	CursorSaveSeq      = "\x1b[7"
-	CursorRestoreSeq   = "\x1b[8"
-	CursorHideSeq      = "\x1b[?25l"
-	CursorShowSeq      = "\x1b[?25h"
-	CursorEraseLineSeq = "\x1b[2K"
+	CursorHomeSeq       = "\x1b[H"
+	CursorUpSeq         = "\x1b[A"
+	CursorDownSeq       = "\x1b[B"
+	CursorRightSeq      = "\x1b[C"
+	CursorLeftSeq       = "\x1b[D"
+	CursorSaveSeq       = "\x1b[7"
+	CursorRestoreSeq    = "\x1b[8"
+	CursorHideSeq       = "\x1b[?25l"
+	CursorShowSeq       = "\x1b[?25h"
+	CursorEraseLineSeq  = "\x1b[2K"
+	EraseLineToCurSeq   = "\x1b[1K"
+	EraseLineFromCurSeq = "\x1b[0K"
 )
 
 // Requires Parameters
@@ -122,6 +124,22 @@ func CursorLeft(n int) (err error) {
 // CursorEraseLine erases the current line.
 func CursorEraseLine() (err error) {
 	if _, err = Output.Write([]byte(CursorEraseLineSeq)); err != nil {
+		return err
+	}
+	return nil
+}
+
+// EraseLineToCursor erases from the start of the line to the cursor.
+func EraseLineToCursor() (err error) {
+	if _, err = Output.Write([]byte(EraseLineToCurSeq)); err != nil {
+		return err
+	}
+	return nil
+}
+
+// EraseLineFromCursor erases the line from the cursor to the end of the line.
+func EraseLineFromCursor() (err error) {
+	if _, err = Output.Write([]byte(EraseLineFromCurSeq)); err != nil {
 		return err
 	}
 	return nil
