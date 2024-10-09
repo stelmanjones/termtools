@@ -16,7 +16,7 @@ replace github.com/stelmanjones/termtools/text => ./text
 
 replace github.com/stelmanjones/termtools/tty => ./tty
 
-go 1.23.0
+go 1.23.1
 
 require (
 	github.com/charmbracelet/log v0.4.0

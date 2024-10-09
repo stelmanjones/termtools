@@ -4,7 +4,9 @@ import (
 	"context"
 	"os"
 
+	"atomicgo.dev/keyboard/keys"
 	"github.com/charmbracelet/log"
+	"github.com/stelmanjones/termtools/internal"
 	"github.com/stelmanjones/termtools/tty"
 )
 
@@ -16,11 +18,19 @@ var logger = log.NewWithOptions(os.Stderr, log.Options{
 
 func main() {
 	done := make(chan struct{}, 1)
+	k := make(chan keys.Key, 1)
 	ctx := context.Background()
 
-	defer close(done)
+	shutdown := func() {
+		close(done)
+		close(k)
+		os.Exit(0)
+		logger.Info("Exiting 👋🏻")
+	}
 
-	tty.NotifyOnResize(ctx, done, func() {
+	defer shutdown()
+	go internal.ListenForInput(k)
+	go tty.NotifyOnResize(ctx, done, func() {
 		size, err := tty.TermSize(os.Stdout.Fd())
 		if err != nil {
 			logger.Error("Error getting size")
@@ -28,6 +38,13 @@ func main() {
 
 		logger.Infof("Terminal size:\n    Width: %d\n    Height: %d", size.Width, size.Height)
 	})
+
+	for key := range k {
+		switch key.Code {
+		case keys.CtrlC, keys.CtrlD, keys.Esc:
+			shutdown()
+		}
+	}
 
 	//
 	// a := 1

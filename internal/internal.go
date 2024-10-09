@@ -24,6 +24,7 @@ func ListenForInput(ch chan keys.Key) error {
 				ch <- key
 				return true, nil
 			}
+
 		default:
 			{
 				ch <- key
