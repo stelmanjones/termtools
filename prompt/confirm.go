@@ -67,6 +67,9 @@ func (p *ConfirmationPrompt) Run() (bool, error) {
 				return false, nil
 
 			}
+		case keys.Enter:
+			ch <- key
+			return true, nil
 		default:
 			{
 				ch <- key
@@ -81,6 +84,9 @@ outer:
 			out.ClearLine()
 			log.Error("User cancelled")
 			return false, ErrCanceledPrompt
+		case keys.Enter:
+			result = p.defaultValue
+			break outer
 		case keys.RuneKey:
 			switch key.String() {
 			case "y", "Y":
