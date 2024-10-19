@@ -12,7 +12,7 @@ type Base[T Value] struct {
 	// PromptType
 	label    string
 	selector string
-	//theme *TermtoolsTheme
+	// theme *TermtoolsTheme
 }
 
 // SetSelector sets the selector for the prompt.
@@ -22,11 +22,13 @@ func (p *Base[T]) SetSelector(selector string) *Base[T] {
 }
 
 // Ask is a convenience function that creates a new question prompt and runs it.
-func Ask(label string, removeWhenDone bool) (string, error) {
-
+func Ask(label string, defaultValue string, removeWhenDone bool) (string, error) {
 	p := NewQuestionPrompt(label)
 	if removeWhenDone {
 		p.RemoveWhenDone()
+	}
+	if defaultValue != "" {
+		p.SetDefault(defaultValue)
 	}
 	return p.Run()
 }
