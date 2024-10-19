@@ -29,7 +29,7 @@ func TermSize(fd uintptr) (*WindowSize, error) {
 }
 
 // NotifyOnResize listens for window size changes and runs the handler every time it does.
-func NotifyOnResize(ctx context.Context, done chan struct{}, handler func()) {
+func NotifyOnResize(ctx context.Context, done chan bool, handler func()) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGWINCH)
 
