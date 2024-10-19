@@ -11,6 +11,7 @@ import (
 // QuestionPrompt struct represents a prompt for a question.
 type QuestionPrompt struct {
 	Base[string]
+	defaultValue   string
 	removeWhenDone bool
 }
 
@@ -27,6 +28,10 @@ func NewQuestionPrompt(label string) *QuestionPrompt {
 // SetLabel sets the label of the QuestionPrompt.
 func (p *QuestionPrompt) SetLabel(label string) {
 	p.label = label
+}
+
+func (p *QuestionPrompt) SetDefault(v string) {
+	p.defaultValue = v
 }
 
 // RemoveWhenDone clears the prompt when done.
